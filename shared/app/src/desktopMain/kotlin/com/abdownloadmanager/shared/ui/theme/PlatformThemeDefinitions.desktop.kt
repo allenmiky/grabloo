@@ -46,15 +46,15 @@ actual fun myPlatformScrollbarStyle(): ScrollbarStyle {
 }
 
 private val desktopTextSizes = TextSizes(
-    xs = 8.sp,
-    sm = 10.sp,
-    base = 13.sp,
-    lg = 14.sp,
-    xl = 16.sp,
-    x2l = 18.sp,
-    x3l = 20.sp,
-    x4l = 22.sp,
-    x5l = 24.sp,
+    xs = 9.sp,
+    sm = 11.sp,
+    base = 12.sp,
+    lg = 13.sp,
+    xl = 14.sp,
+    x2l = 16.sp,
+    x3l = 18.sp,
+    x4l = 20.sp,
+    x5l = 22.sp,
 )
 private val desktopSpacings = MySpacings(
     thumbSize = 24.dp,
@@ -65,7 +65,7 @@ private val desktopSpacings = MySpacings(
 )
 
 val desktopShapes = MyShapes(
-    defaultRounded = RoundedCornerShape(6.dp)
+    defaultRounded = RoundedCornerShape(4.dp)
 )
 
 @Composable

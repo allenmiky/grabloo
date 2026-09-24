@@ -9,6 +9,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.draganddrop.dragAndDropTarget
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,6 +32,7 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.abdownloadmanager.desktop.actions.gotoSettingsAction
 import com.abdownloadmanager.desktop.actions.openQueuesAction
@@ -38,9 +40,7 @@ import com.abdownloadmanager.desktop.actions.openSchedulerAction
 import com.abdownloadmanager.desktop.actions.stopAllAction
 import com.abdownloadmanager.desktop.pages.home.sections.DownloadList
 import com.abdownloadmanager.desktop.pages.home.sections.SearchBox
-import com.abdownloadmanager.shared.pages.home.category.DefinedStatusCategories
-import com.abdownloadmanager.shared.pages.home.category.DownloadStatusCategoryFilter
-import com.abdownloadmanager.desktop.pages.home.sections.category.StatusFilterItem
+import com.abdownloadmanager.desktop.pages.home.sections.category.Categories
 import com.abdownloadmanager.desktop.pages.home.sections.queue.QueuesSection
 import com.abdownloadmanager.desktop.window.custom.TitlePosition
 import com.abdownloadmanager.desktop.window.custom.WindowEnd
@@ -226,14 +226,6 @@ fun HomePage(component: HomeComponent) {
         WindowStart {
             HomeMenuBar(component, Modifier.fillMaxHeight())
         }
-        WindowEnd {
-            HomeSearch(
-                component = component,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(vertical = 2.dp)
-            )
-        }
     } else {
         WindowTitlePosition(
             TitlePosition(centered = false, afterStart = false)
@@ -298,30 +290,24 @@ fun HomePage(component: HomeComponent) {
                 animateFloatAsState(if (isDragging) 0.2f else 1f).value
             )
         ) {
-            if (!mergeTopBar) {
-                WithTitleBarDirection {
-                    Spacer(Modifier.height(4.dp))
-                    TopBar(component)
-                    Spacer(Modifier.height(6.dp))
-                }
-            }
+            IdmToolbar(component)
             Spacer(
                 Modifier.fillMaxWidth()
                     .height(1.dp)
-                    .background(myColors.surface)
+                    .background(myColors.divider)
             )
-            Row {
+            Row(Modifier.weight(1f)) {
                 val categoriesWidth by component.categoriesWidth.collectAsState()
                 Box(
                     Modifier
                         .width(categoriesWidth)
                         .fillMaxHeight()
                         .background(myColors.sidebar)
-                        .border(0.5.dp, myColors.divider)
                 ) {
                     Column(
                         Modifier
-                            .padding(top = 8.dp)
+                            .fillMaxSize()
+                            .padding(top = 4.dp, bottom = 4.dp)
                             .verticalScroll(rememberScrollState())
                     ) {
                         Categories(
@@ -333,23 +319,20 @@ fun HomePage(component: HomeComponent) {
                             modifier = Modifier.fillMaxWidth(),
                             component = component,
                         )
-                        Spacer(Modifier.size(8.dp))
                     }
                 }
-                Spacer(Modifier.size(8.dp))
-                //split pane
+                // Splitter handle
                 Handle(
-                    Modifier.width(5.dp)
+                    Modifier.width(1.dp)
                         .fillMaxHeight()
+                        .background(myColors.divider)
                 ) { delta ->
                     component.setCategoriesWidth { it + delta }
                 }
                 Column(Modifier.weight(1f)) {
-                    IdmToolbar(component)
                     var lastSelected by remember { mutableStateOf(null as Long?) }
                     DownloadList(
                         modifier = Modifier
-                            .padding(horizontal = 4.dp)
                             .fillMaxWidth()
                             .weight(1f),
                         downloadList = listState,
@@ -381,12 +364,16 @@ fun HomePage(component: HomeComponent) {
                     Spacer(
                         Modifier
                             .fillMaxWidth()
-                            .height(2.dp)
-                            .background(
-                                myColors.surface
-                            )
+                            .height(1.dp)
+                            .background(myColors.divider)
                     )
                     DownloadDetailsPanel(component)
+                    Spacer(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(myColors.divider)
+                    )
                     Footer(component)
                 }
             }
@@ -548,37 +535,30 @@ private fun ShowConfirmPrompt(
     onConfirm: () -> Unit,
     onCancel: () -> Unit,
 ) {
-    val shape = myShapes.defaultRounded
+    val shape = RoundedCornerShape(8.dp)
     Dialog(onDismissRequest = onCancel) {
         Column(
             Modifier
                 .clip(shape)
-                .border(2.dp, myColors.onBackground / 10, shape)
-                .background(
-                    Brush.linearGradient(
-                        listOf(
-                            myColors.surface,
-                            myColors.background,
-                        )
-                    )
-                )
-                .padding(16.dp)
+                .border(1.dp, Color(0xFF404040), shape)
+                .background(Color(0xFF262626))
+                .padding(14.dp)
                 .width(IntrinsicSize.Max)
-                .widthIn(max = 260.dp)
+                .widthIn(max = 360.dp)
         ) {
             Text(
                 text = promptState.title.rememberString(),
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 fontSize = myTextSizes.xl,
-                color = myColors.onBackground,
+                color = Color(0xFFE6E6E6),
             )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
             Text(
                 text = promptState.description.rememberString(),
                 fontSize = myTextSizes.base,
-                color = myColors.onBackground,
+                color = Color(0xFF93939A),
             )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(14.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -589,12 +569,19 @@ private fun ShowConfirmPrompt(
                 }
                 Spacer(Modifier.weight(1f))
                 ActionButton(
-                    text = myStringResource(Res.string.ok),
-                    onClick = onConfirm,
-                    modifier = Modifier.focusRequester(confirmFocusRequester)
+                    text = myStringResource(Res.string.cancel),
+                    onClick = onCancel,
+                    backgroundColor = SolidColor(Color(0xFF4A4A4A)),
+                    contentColor = Color(0xFFE6E6E6),
                 )
                 Spacer(Modifier.width(8.dp))
-                ActionButton(text = myStringResource(Res.string.cancel), onClick = onCancel)
+                ActionButton(
+                    text = myStringResource(Res.string.ok),
+                    onClick = onConfirm,
+                    backgroundColor = SolidColor(Color(0xFF2F7BF2)),
+                    contentColor = Color.White,
+                    modifier = Modifier.focusRequester(confirmFocusRequester)
+                )
             }
         }
     }
@@ -606,23 +593,16 @@ private fun ShowDeleteCategoryPrompt(
     onConfirm: () -> Unit,
     onCancel: () -> Unit,
 ) {
-    val shape = myShapes.defaultRounded
+    val shape = RoundedCornerShape(8.dp)
     Dialog(onDismissRequest = onCancel) {
         Column(
             Modifier
                 .clip(shape)
-                .border(2.dp, myColors.onBackground / 10, shape)
-                .background(
-                    Brush.linearGradient(
-                        listOf(
-                            myColors.surface,
-                            myColors.background,
-                        )
-                    )
-                )
-                .padding(16.dp)
+                .border(1.dp, Color(0xFF404040), shape)
+                .background(Color(0xFF262626))
+                .padding(14.dp)
                 .width(IntrinsicSize.Max)
-                .widthIn(max = 260.dp)
+                .widthIn(max = 360.dp)
         ) {
             Text(
                 myStringResource(
@@ -631,11 +611,11 @@ private fun ShowDeleteCategoryPrompt(
                         name = deletePromptState.category.name
                     ),
                 ),
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 fontSize = myTextSizes.xl,
-                color = myColors.onBackground,
+                color = Color(0xFFE6E6E6),
             )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
             Text(
                 myStringResource(
                     Res.string.confirm_delete_category_item_description,
@@ -644,15 +624,15 @@ private fun ShowDeleteCategoryPrompt(
                     )
                 ),
                 fontSize = myTextSizes.base,
-                color = myColors.onBackground,
+                color = Color(0xFF93939A),
             )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(6.dp))
             Text(
                 myStringResource(Res.string.your_download_will_not_be_deleted),
                 fontSize = myTextSizes.base,
-                color = myColors.onBackground,
+                color = Color(0xFF93939A),
             )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(14.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -663,14 +643,20 @@ private fun ShowDeleteCategoryPrompt(
                 }
                 Spacer(Modifier.weight(1f))
                 ActionButton(
-                    text = myStringResource(Res.string.delete),
-                    onClick = onConfirm,
-                    focusedBorderColor = SolidColor(myColors.error),
-                    modifier = Modifier.focusRequester(confirmFocusRequester),
-                    contentColor = myColors.error,
+                    text = myStringResource(Res.string.cancel),
+                    onClick = onCancel,
+                    backgroundColor = SolidColor(Color(0xFF4A4A4A)),
+                    contentColor = Color(0xFFE6E6E6),
                 )
                 Spacer(Modifier.width(8.dp))
-                ActionButton(text = myStringResource(Res.string.cancel), onClick = onCancel)
+                ActionButton(
+                    text = myStringResource(Res.string.delete),
+                    onClick = onConfirm,
+                    backgroundColor = SolidColor(Color(0xFFE5484D)),
+                    contentColor = Color.White,
+                    focusedBorderColor = SolidColor(Color(0xFFE5484D)),
+                    modifier = Modifier.focusRequester(confirmFocusRequester),
+                )
             }
         }
     }
@@ -732,95 +718,6 @@ fun DragWidget(
 
 
 @Composable
-private fun Categories(
-    modifier: Modifier,
-    component: HomeComponent,
-) {
-
-    val currentTypeFilter = component.filterState.typeCategoryFilter
-    val currentStatusFilter = component.filterState.statusFilter
-    val categories by component.categoryManager.categoriesFlow.collectAsState()
-    val allDownloads by component.allDownloadsFlow.collectAsState()
-    val clipShape = myShapes.defaultRounded
-    val showCategoryOption by component.categoryActions.collectAsState()
-
-    fun showCategoryOption(item: Category?) {
-        component.showCategoryOptions(item)
-    }
-
-    fun closeCategoryOptions() {
-        component.closeCategoryOptions()
-    }
-    Column(
-        modifier
-            .padding(start = 16.dp)
-            .clip(clipShape)
-            .border(1.dp, myColors.surface, clipShape)
-            .padding(1.dp)
-    ) {
-        var expendedItem: DownloadStatusCategoryFilter? by remember {
-            mutableStateOf(
-                currentStatusFilter
-            )
-        }
-        for (statusCategoryFilter in DefinedStatusCategories.values()) {
-            val count = if (statusCategoryFilter == DefinedStatusCategories.All) {
-                allDownloads.size
-            } else {
-                allDownloads.count { statusCategoryFilter.accept(it) }
-            }
-            StatusFilterItem(
-                isExpanded = expendedItem == statusCategoryFilter,
-                currentTypeCategoryFilter = currentTypeFilter,
-                currentStatusCategoryFilter = currentStatusFilter,
-                statusFilter = statusCategoryFilter,
-                count = count,
-                categories = categories,
-                onFilterChange = {
-                    component.onCategoryFilterChange(statusCategoryFilter, it)
-                },
-                onRequestExpand = { expand ->
-                    expendedItem = statusCategoryFilter.takeIf { expand }
-                },
-                onItemsDroppedInCategory = { category, ids ->
-                    component.moveItemsToCategory(category, ids)
-                },
-                onRequestOpenOptionMenu = {
-                    showCategoryOption(it)
-                },
-                onCategoryReorderRequest = {fromIndex, delta ->
-                    component.reorderCategory(fromIndex, delta)
-                }
-            )
-        }
-    }
-    showCategoryOption?.let {
-        CategoryOption(
-            categoryOptionMenuState = it,
-            onDismiss = {
-                closeCategoryOptions()
-            }
-        )
-    }
-}
-
-@Composable
-fun CategoryOption(
-    categoryOptionMenuState: CategoryActions,
-    onDismiss: () -> Unit,
-) {
-    ShowOptionsInPopup(
-        MenuItem.SubMenu(
-            icon = categoryOptionMenuState.categoryItem?.rememberIconPainter(),
-            title = categoryOptionMenuState.categoryItem?.name?.asStringSource()
-                ?: Res.string.categories.asStringSource(),
-            categoryOptionMenuState.menu,
-        ),
-        onDismiss
-    )
-}
-
-@Composable
 private fun HomeMenuBar(
     component: HomeComponent,
     modifier: Modifier,
@@ -844,24 +741,27 @@ private fun IdmToolbar(component: HomeComponent) {
         Modifier
             .fillMaxWidth()
             .background(myColors.toolbar)
-            .border(0.5.dp, myColors.divider)
-            .padding(horizontal = 6.dp, vertical = 4.dp),
+            .padding(horizontal = 8.dp, vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(2.dp)
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         PrimaryToolbarButton(
-            icon = MyIcons.link,
+            icon = MyIcons.add,
             title = "Add URL",
             onClick = { component.requestEnterNewURL() },
         )
-        ToolbarAction(component.resumeAction)
-        ToolbarAction(component.pauseAction)
-        ToolbarAction(stopAllAction)
-        ToolbarAction(component.deleteAction)
-        ToolbarAction(openQueuesAction)
-        ToolbarAction(openSchedulerAction)
+        ToolbarAction(component.resumeAction, "Resume")
+        ToolbarAction(component.pauseAction, "Pause")
+        ToolbarAction(stopAllAction, "Stop all")
+        ToolbarAction(component.deleteAction, "Delete")
+        ToolbarAction(openQueuesAction, "Queues")
+        ToolbarAction(openSchedulerAction, "Scheduler")
+        ToolbarAction(gotoSettingsAction, "Options")
         Spacer(Modifier.weight(1f))
-        ToolbarAction(gotoSettingsAction)
+        HomeSearch(
+            component = component,
+            modifier = Modifier.height(24.dp)
+        )
     }
 }
 
@@ -871,22 +771,29 @@ private fun PrimaryToolbarButton(
     title: String,
     onClick: () -> Unit,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
     Tooltip(title.asStringSource()) {
-        Column(
+        Row(
             Modifier
-                .clip(RoundedCornerShape(6.dp))
-                .background(myColors.primaryButtonGradient)
-                .clickable(onClick = onClick)
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .height(24.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(if (isHovered) Color(0xFF4A8DF6) else Color(0xFF2F7BF2))
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onClick
+                )
+                .padding(horizontal = 9.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
         ) {
             WithContentColor(Color.White) {
-                MyIcon(icon, null, Modifier.size(18.dp))
-                Spacer(Modifier.height(2.dp))
+                MyIcon(icon, null, Modifier.size(13.dp))
                 Text(
                     text = title,
                     maxLines = 1,
-                    fontSize = myTextSizes.xs,
+                    fontSize = 11.sp,
                     color = Color.White,
                     fontWeight = FontWeight.Medium,
                 )
@@ -896,27 +803,36 @@ private fun PrimaryToolbarButton(
 }
 
 @Composable
-private fun ToolbarAction(action: AnAction) {
+private fun ToolbarAction(action: AnAction, customTitle: String? = null) {
     val icon by action.icon.collectAsState()
     val title by action.title.collectAsState()
     val enabled by action.isEnabled.collectAsState()
-    Tooltip(title) {
-        Column(
+    val displayTitle = customTitle ?: title.rememberString()
+    val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+    Tooltip(displayTitle.asStringSource()) {
+        Row(
             Modifier
-                .clip(RoundedCornerShape(6.dp))
-                .clickable(enabled = enabled) { action() }
+                .height(24.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(if (isHovered && enabled) Color(0x28FFFFFF) else Color(0x33000000))
+                .clickable(
+                    enabled = enabled,
+                    interactionSource = interactionSource,
+                    indication = null,
+                ) { action() }
                 .ifThen(!enabled) { alpha(0.4f) }
-                .padding(horizontal = 10.dp, vertical = 6.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .padding(horizontal = 9.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
         ) {
             WithContentAlpha(1f) {
-                icon?.let { MyIcon(it, null, Modifier.size(18.dp)) }
-                Spacer(Modifier.height(2.dp))
+                icon?.let { MyIcon(it, null, Modifier.size(13.dp)) }
                 Text(
-                    text = title.rememberString(),
+                    text = displayTitle,
                     maxLines = 1,
-                    fontSize = myTextSizes.xs,
-                    color = myColors.onBackground,
+                    fontSize = 11.sp,
+                    color = Color(0xFFE6E6E6),
                 )
             }
         }
@@ -927,23 +843,38 @@ private fun ToolbarAction(action: AnAction) {
 private fun DownloadDetailsPanel(component: HomeComponent) {
     val selection by component.selectionList.collectAsState()
     val list by component.downloadList.collectAsState()
-    val item = selection.singleOrNull()?.let { id -> list.find { it.id == id } } ?: return
+    val item = selection.singleOrNull()?.let { id -> list.find { it.id == id } }
+    if (item == null) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .background(myColors.panel)
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Text(
+                "Select a download to see its connections.",
+                fontSize = myTextSizes.sm,
+                color = myColors.dimText,
+            )
+        }
+        return
+    }
     Row(
         Modifier
             .fillMaxWidth()
             .background(myColors.panel)
-            .border(0.5.dp, myColors.divider)
-            .padding(horizontal = 14.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         if (item is ProcessingDownloadItemState) {
             ConnectionSegments(
                 parts = item.parts,
                 completed = item.status == DownloadJobStatus.Finished,
                 modifier = Modifier
-                    .width(230.dp)
-                    .height(16.dp),
+                    .width(200.dp)
+                    .height(14.dp),
             )
         }
         Column(Modifier.weight(1f)) {
@@ -954,9 +885,9 @@ private fun DownloadDetailsPanel(component: HomeComponent) {
                 fontSize = myTextSizes.base,
                 fontWeight = FontWeight.SemiBold,
             )
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(2.dp))
             Row(
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 val totalSize = convertPositiveSizeToHumanReadable(
@@ -1123,51 +1054,42 @@ private fun SpeedLimitSwitch(component: HomeComponent) {
 @Composable
 private fun Footer(component: HomeComponent) {
     Row(
-        modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(myColors.background)
+            .padding(vertical = 4.dp, horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Spacer(Modifier.weight(1f))
         val activeCount by component.activeDownloadCountFlow.collectAsState()
-        FooterItem(MyIcons.activeCount, activeCount.toString(), "")
+        val listState by component.downloadList.collectAsState()
+        val totalCount = listState.size
         val size by component.globalSpeedFlow.collectAsState(0)
         val speed = convertPositiveBytesToSizeUnit(size, LocalSpeedUnit.current)
-        if (speed != null) {
-            val speedText = speed.formatedValue()
-            val unitText = speed.unit.toString() + "/s"
-            FooterItem(MyIcons.speed, speedText, unitText)
-        }
-    }
-}
+        val speedText = if (speed != null && size > 0) "${speed.formatedValue()} ${speed.unit}/s" else "0 B/s"
 
-@Composable
-private fun FooterItem(icon: IconSource, value: String, unit: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        WithContentAlpha(0.25f) {
-            MyIcon(icon, null, Modifier.size(16.dp))
+        Text(
+            "$activeCount active  ·  $speedText  ·  $totalCount total",
+            fontSize = myTextSizes.sm,
+            color = myColors.dimText,
+        )
+        Spacer(Modifier.weight(1f))
+        val speedLimit by component.globalSpeedLimit.collectAsState()
+        val speedLimitText = if (speedLimit > 0) {
+            convertPositiveSpeedToHumanReadable(speedLimit, LocalSpeedUnit.current)
+        } else {
+            "off"
         }
-        Spacer(Modifier.width(8.dp))
-        WithContentAlpha(0.75f) {
-            Text(value, maxLines = 1, fontSize = myTextSizes.base)
-        }
-        Spacer(Modifier.width(8.dp))
-        WithContentAlpha(0.25f) {
-            Text(unit, maxLines = 1, fontSize = myTextSizes.base)
-        }
-    }
-}
-
-@Composable
-private fun TopBar(component: HomeComponent) {
-    Row(
-        modifier = Modifier.padding(start = 16.dp, end = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        HomeMenuBar(component, Modifier)
-        Box(Modifier.weight(1f))
-        HomeSearch(
-            component = component,
-            modifier = Modifier,
-            textPadding = PaddingValues(8.dp),
+        Text(
+            "Speed limit: $speedLimitText",
+            fontSize = myTextSizes.sm,
+            color = myColors.dimText,
+            modifier = Modifier.clickable {
+                if (speedLimit > 0) {
+                    component.globalSpeedLimit.value = 0L
+                } else {
+                    component.globalSpeedLimit.value = 1024L * 1024L
+                }
+            }
         )
     }
 }
@@ -1176,10 +1098,9 @@ private fun TopBar(component: HomeComponent) {
 fun HomeSearch(
     component: HomeComponent,
     modifier: Modifier,
-    textPadding: PaddingValues = PaddingValues(horizontal = 8.dp),
+    textPadding: PaddingValues = PaddingValues(horizontal = 6.dp),
 ) {
     val searchBoxInteractionSource = remember { MutableInteractionSource() }
-
     val isFocused by searchBoxInteractionSource.collectIsFocusedAsState()
     WithLanguageDirection {
         SearchBox(
@@ -1189,14 +1110,18 @@ fun HomeSearch(
             },
             textPadding = textPadding,
             interactionSource = searchBoxInteractionSource,
+            placeholder = "Search downloads",
             modifier = modifier
                 .width(
                     animateDpAsState(
-                        if (isFocused) 220.dp else 180.dp
+                        if (isFocused) 220.dp else 170.dp
                     ).value
                 )
         )
     }
 }
+
+
+
 
 

@@ -6,26 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -34,6 +17,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.abdownloadmanager.shared.ui.widget.Text
 import com.abdownloadmanager.shared.util.LocalShortCutManager
@@ -76,6 +60,7 @@ fun SubMenu(
         onRequestClose = onRequestClose,
     )
 }
+
 @Composable
 fun SubMenu(
     subMenu: List<MenuItem>,
@@ -93,14 +78,13 @@ fun SubMenu(
         val shape = LocalMenuBoxClip.current
         Column(
             Modifier
-                .shadow(24.dp)
-//                .verticalScroll(rememberScrollState())
+                .shadow(16.dp, shape)
                 .clip(shape)
                 .width(IntrinsicSize.Max)
-                .widthIn(120.dp)
-                .border(1.dp, myColors.surface, shape)
-                .background(myColors.menuGradientBackground)
-                .padding(horizontal = 0.dp, vertical = 0.dp)
+                .widthIn(140.dp)
+                .border(1.dp, myColors.divider, shape)
+                .background(myColors.surface)
+                .padding(vertical = 3.dp)
         ) {
             header?.invoke()
             for (menuItem in subMenu) {
@@ -108,8 +92,6 @@ fun SubMenu(
                 val isHovered by interactionSource.collectIsHoveredAsState()
                 LaunchedEffect(isHovered) {
                     if (isHovered) {
-//                        println("last overed item is ${menuItem.hashCode()}")
-//                        println("last overed item is ${(menuItem as? MenuItem.SubMenu)?.title?.value}")
                         lastHoveredItem = menuItem
                     }
                 }
@@ -138,28 +120,25 @@ private fun ReactableItem(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     extraContent: @Composable () -> Unit = {},
 ) {
-    val iconModifier = Modifier.size(16.dp)
+    val iconModifier = Modifier.size(14.dp)
     val title by item.title.collectAsState()
     val icon by item.icon.collectAsState()
-    val itemPadding = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+    val itemPadding = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
     val isHovered by interactionSource.collectIsHoveredAsState()
     val isEnabled = (item as? MenuItem.HasEnable)
         ?.isEnabled
         ?.collectAsState()
         ?.value ?: true
+    val isHighlighted = ((isHovered && isEnabled) || isSelected)
     Row(
         modifier
             .ifThen(!isEnabled) { alpha(0.5f) }
             .hoverable(interactionSource)
             .background(
-                when {
-                    (isHovered && isEnabled) || isSelected -> {
-                        myColors.surface
-                    }
-
-                    else -> {
-                        Color.Transparent
-                    }
+                if (isHighlighted) {
+                    myColors.selectedRow
+                } else {
+                    Color.Transparent
                 }
             )
             .clickable(enabled = isEnabled) {
@@ -169,24 +148,28 @@ private fun ReactableItem(
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        icon.let { icon ->
-            if (icon != null) {
-                Spacer(Modifier.width(4.dp))
-                MyIcon(icon, null, iconModifier)
-                Spacer(Modifier.width(8.dp))
-            } else {
-                Spacer(iconModifier)
-            }
+        icon?.let { iconPainter ->
+            MyIcon(
+                iconPainter,
+                null,
+                iconModifier,
+                tint = if (isHighlighted) Color.White else myColors.onBackground
+            )
+            Spacer(Modifier.width(8.dp))
         }
         Text(
             title.rememberString(),
             Modifier.weight(1f),
             fontSize = myTextSizes.base,
+            color = if (isHighlighted) Color.White else myColors.onBackground,
+            fontWeight = if (isHighlighted) FontWeight.Medium else FontWeight.Normal,
             softWrap = false,
             maxLines = 1,
         )
         Spacer(Modifier.width(16.dp))
-        extraContent()
+        WithContentColor(if (isHighlighted) Color.White else myColors.onBackground) {
+            extraContent()
+        }
     }
 }
 
@@ -200,7 +183,6 @@ private fun RenderMenuItem(
     modifier: Modifier = Modifier,
     onRequestOpenItem: (MenuItem.SubMenu?) -> Unit,
 ) {
-//    val isEnabled by menuItem.isEnabled.collectAsState()
     LaunchedEffect(isHovered, menuItem) {
         if (isHovered) {
             if (menuItem is MenuItem.SubMenu) {
@@ -218,9 +200,10 @@ private fun RenderMenuItem(
             MenuItem.Separator -> {
                 Spacer(
                     Modifier
+                        .padding(vertical = 3.dp)
                         .fillMaxWidth()
                         .height(1.dp)
-                        .background(myColors.onSurface / 5)
+                        .background(myColors.divider)
                 )
             }
 
@@ -264,7 +247,7 @@ private fun RenderSubMenuItem(
                 MyIcons.next,
                 null,
                 Modifier
-                    .size(16.dp)
+                    .size(12.dp)
                     .autoMirror(),
             )
         })
@@ -310,7 +293,6 @@ private fun RenderSingleItem(
             }
         }
     )
-
 }
 
 @Composable
@@ -330,14 +312,14 @@ private fun RenderShortcutStroke(shortcutStroke: PlatformKeyStroke) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(1.dp)
         ) {
-            val shape = RoundedCornerShape(10)
+            val shape = RoundedCornerShape(3.dp)
             WithContentColor(myColors.onBackground) {
                 Text(
                     modifiers.joinToString("+"),
                     Modifier
                         .clip(shape)
-                        .background(myColors.onBackground / 5)
-                        .padding(2.dp)
+                        .background(myColors.onBackground / 0.1f)
+                        .padding(horizontal = 4.dp, vertical = 1.dp)
                 )
             }
         }

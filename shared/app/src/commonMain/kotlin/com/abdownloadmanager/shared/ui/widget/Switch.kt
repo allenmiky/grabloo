@@ -28,13 +28,13 @@ fun Switch(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier.width(38.dp).height(22.dp),
+    modifier: Modifier = Modifier.width(32.dp).height(18.dp),
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     val trackBrush = if (checked) {
-        myColors.primaryButtonGradient
+        SolidColor(myColors.primary)
     } else {
-        SolidColor(myColors.divider)
+        SolidColor(Color(0xFF5A5A5A))
     }
     Box(
         modifier
@@ -51,7 +51,7 @@ fun Switch(
                 interactionSource = interactionSource,
                 indication = null
             )
-            .padding(2.5.dp)
+            .padding(2.dp)
             .fillMaxSize()
     ) {
         val knobAlignment by animateFloatAsState(if (checked) 1f else -1f)

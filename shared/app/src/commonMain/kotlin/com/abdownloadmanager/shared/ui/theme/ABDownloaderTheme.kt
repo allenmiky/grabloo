@@ -36,7 +36,7 @@ fun ABDownloaderTheme(
             LocalTextStyle provides LocalTextStyle.current.copy(
                 lineHeight = TextUnit.Unspecified,
                 fontSize = textSizes.base,
-                fontFamily = fontFamily,
+                fontFamily = fontFamily ?: FontFamily.Monospace,
             ),
         ) {
             PlatformDependentProviders {

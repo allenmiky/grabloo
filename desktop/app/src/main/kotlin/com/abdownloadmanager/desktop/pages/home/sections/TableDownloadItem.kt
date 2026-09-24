@@ -276,7 +276,7 @@ fun StatusCell(
                         myStringResource(itemState.status.toStringResource()),
                         myColors.success,
                     )
-                    Spacer(Modifier.height(2.5.dp))
+                    Spacer(Modifier.height(2.dp))
                     ProgressStatus(
                         100,
                         myColors.successGradient,
@@ -291,7 +291,7 @@ fun StatusCell(
                     myStringResource(Res.string.finished),
                     myColors.success,
                 )
-                Spacer(Modifier.height(2.5.dp))
+                Spacer(Modifier.height(2.dp))
                 ProgressStatus(
                     100,
                     myColors.successGradient,
@@ -432,7 +432,7 @@ private fun ProgressAndPercent(
             }
         )
         if (status != DownloadProgressStatus.Added) {
-            Spacer(Modifier.height(2.5.dp))
+            Spacer(Modifier.height(2.dp))
             ProgressStatus(
                 percent, background
             )
@@ -445,11 +445,11 @@ private fun ProgressStatus(
     percent: Int?,
     background: Brush = myColors.primaryButtonGradient,
 ) {
-    val shape = RoundedCornerShape(3.dp)
+    val shape = RoundedCornerShape(2.dp)
     Box(
         Modifier
             .fillMaxWidth()
-            .height(6.dp)
+            .height(4.dp)
             .clip(shape)
             .background(myColors.divider)
     ) {

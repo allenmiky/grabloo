@@ -23,9 +23,12 @@ import com.abdownloadmanager.shared.util.ui.LocalContentColor
 import com.abdownloadmanager.shared.util.ui.WithContentAlpha
 import com.abdownloadmanager.shared.util.ui.WithContentColor
 import com.abdownloadmanager.shared.util.ui.myColors
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import com.abdownloadmanager.shared.util.ui.theme.myShapes
 import com.abdownloadmanager.shared.util.ui.theme.mySpacings
 import com.abdownloadmanager.shared.util.ui.theme.myTextSizes
+import ir.amirab.util.ifThen
 
 @Composable
 fun ActionButton(
@@ -34,26 +37,36 @@ fun ActionButton(
     enabled: Boolean = true,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
-    backgroundColor: Brush = SolidColor(myColors.surface),
-    disabledBackgroundColor: Brush = SolidColor(myColors.surface / 0.5f),
-    borderColor: Brush = SolidColor(myColors.onBackground / 10),
-    focusedBorderColor: Brush = SolidColor(myColors.focusedBorderColor),
-    disabledBorderColor: Brush = SolidColor(myColors.onBackground / 10),
-    contentColor: Color = LocalContentColor.current,
-    contentPadding: PaddingValues = PaddingValues(vertical = 6.dp, horizontal = 24.dp),
+    backgroundColor: Brush = SolidColor(Color(0xFF4A4A4A)),
+    hoverBackgroundColor: Brush = SolidColor(Color(0xFF565656)),
+    disabledBackgroundColor: Brush = SolidColor(Color(0xFF333333)),
+    borderColor: Brush = SolidColor(Color(0x66000000)),
+    focusedBorderColor: Brush = SolidColor(Color(0xFF2F7BF2)),
+    disabledBorderColor: Brush = SolidColor(Color(0x33000000)),
+    contentColor: Color = Color(0xFFE6E6E6),
+    contentPadding: PaddingValues = PaddingValues(vertical = 2.dp, horizontal = 12.dp),
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     start: (@Composable RowScope.() -> Unit)? = null,
     end: (@Composable RowScope.() -> Unit)? = null,
 ) {
     val isFocused by interactionSource.collectIsFocusedAsState()
-    val shape = myShapes.defaultRounded
-    val borderColor = if (isFocused) focusedBorderColor else borderColor
+    val isHovered by interactionSource.collectIsHoveredAsState()
+    val shape = RoundedCornerShape(4.dp)
+    val currentBg = when {
+        !enabled -> disabledBackgroundColor
+        isHovered -> hoverBackgroundColor
+        else -> backgroundColor
+    }
     Row(
         modifier
-            .heightIn(mySpacings.thumbSize)
-            .border(1.dp, if (enabled) borderColor else disabledBorderColor, shape)
+            .heightIn(min = 24.dp)
+            .height(24.dp)
             .clip(shape)
-            .background(if (enabled) backgroundColor else disabledBackgroundColor)
+            .ifThen(isFocused) {
+                border(2.dp, Color(0x732F7BF2), shape)
+            }
+            .border(1.dp, if (isFocused) focusedBorderColor else (if (enabled) borderColor else disabledBorderColor), shape)
+            .background(currentBg)
             .combinedClickable(
                 enabled = enabled,
                 interactionSource = interactionSource,

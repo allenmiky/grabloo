@@ -11,17 +11,15 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.abdownloadmanager.resources.Res
 import com.abdownloadmanager.shared.ui.widget.MyTextFieldIcon
-import com.abdownloadmanager.shared.ui.widget.MyTextFieldWithIcons
 import com.abdownloadmanager.shared.util.ui.theme.myShapes
 import com.abdownloadmanager.shared.util.ui.theme.mySpacings
 import ir.amirab.util.compose.resources.myStringResource
@@ -30,35 +28,36 @@ import ir.amirab.util.compose.resources.myStringResource
 fun SearchBox(
     text: String,
     onTextChange: (String) -> Unit,
-    textPadding: PaddingValues = PaddingValues(horizontal = 8.dp),
+    textPadding: PaddingValues = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     placeholder: String = myStringResource(Res.string.search_in_the_list),
     modifier: Modifier,
 ) {
-    val shape = myShapes.defaultRounded
+    val shape = RoundedCornerShape(4.dp)
     val textSize = myTextSizes.base
     MyTextField(
         text = text,
         fontSize = textSize,
         onTextChange = onTextChange,
         shape = shape,
+        background = Color(0xFF1F1F1F),
+        borderColor = Color(0xFF404040),
+        focusedBorderColor = Color(0xFF2F7BF2),
         textPadding = textPadding,
         interactionSource = interactionSource,
         start = {
-            WithContentAlpha(
-                animateFloatAsState(if (text.isBlank()) 0.9f else 1f).value
-            ) {
+            WithContentAlpha(0.6f) {
                 MyIcon(
-                    MyIcons.search,
-                    myStringResource(Res.string.search),
+                    MyIcons.folder,
+                    null,
                     Modifier
-                        .padding(start = 8.dp)
-                        .size(mySpacings.iconSize)
+                        .padding(start = 6.dp)
+                        .size(13.dp)
                 )
             }
         },
         end = {
-            AnimatedVisibility(text.isNotBlank()) {
+            if (text.isNotBlank()) {
                 MyTextFieldIcon(
                     icon = MyIcons.clear,
                     enabled = true,
@@ -67,6 +66,16 @@ fun SearchBox(
                         onTextChange("")
                     }
                 )
+            } else {
+                WithContentAlpha(0.6f) {
+                    MyIcon(
+                        MyIcons.search,
+                        myStringResource(Res.string.search),
+                        Modifier
+                            .padding(end = 6.dp)
+                            .size(13.dp)
+                    )
+                }
             }
         },
         modifier = modifier,

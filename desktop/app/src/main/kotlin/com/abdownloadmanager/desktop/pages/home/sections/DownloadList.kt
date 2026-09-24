@@ -29,6 +29,9 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.abdownloadmanager.shared.util.ui.icon.MyIcons
+import com.abdownloadmanager.shared.util.ui.widget.MyIcon
 import com.abdownloadmanager.desktop.pages.home.DownloadItemTransferable
 import com.abdownloadmanager.resources.Res
 import com.abdownloadmanager.shared.ui.widget.table.customtable.CellSize
@@ -125,12 +128,14 @@ fun DownloadList(
         )
     ) {
         val itemHorizontalPadding = 16.dp
-        Table(
-            tableState = tableState,
-            listState = lazyListState,
-            key = { it.id },
-            list = downloadList,
-            modifier = modifier
+        Box(modifier) {
+            Table(
+                tableState = tableState,
+                listState = lazyListState,
+                key = { it.id },
+                list = downloadList,
+                modifier = Modifier
+                    .fillMaxSize()
                 .onKeyEvent {
                     if (it.key == Key.A && isCtrlPressed(windowInfo)) {
                         changeAllSelection(true)
@@ -276,7 +281,8 @@ fun DownloadList(
                                             .background(if (index % 2 == 1) myColors.alternateRow else Color.Transparent)
                                     }
                                 }
-                                .padding(vertical = 6.dp, horizontal = itemHorizontalPadding)
+                                .heightIn(min = 26.dp)
+                                .padding(vertical = 2.dp, horizontal = itemHorizontalPadding)
                         ) {
                             rowContent()
                         }
@@ -327,6 +333,33 @@ fun DownloadList(
                 }
             }
         }
+        if (downloadList.isEmpty()) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(top = 40.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    MyIcon(
+                        icon = MyIcons.appIcon,
+                        contentDescription = null,
+                        tint = Color(0xFF2F7BF2).copy(alpha = 0.35f),
+                        modifier = Modifier.size(130.dp)
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        text = "No downloads here. Click Add URL to start.",
+                        color = Color(0xFF93939A),
+                        fontSize = 12.sp,
+                    )
+                }
+            }
+        }
+    }
     }
 }
 

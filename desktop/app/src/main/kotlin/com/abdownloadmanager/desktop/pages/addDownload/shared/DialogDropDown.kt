@@ -34,6 +34,7 @@ import com.abdownloadmanager.desktop.window.moveSafe
 import com.abdownloadmanager.resources.Res
 import com.abdownloadmanager.shared.util.ui.WithContentAlpha
 import com.abdownloadmanager.shared.util.ui.theme.myShapes
+import com.abdownloadmanager.shared.util.ui.theme.myTextSizes
 import com.abdownloadmanager.shared.util.ui.widget.MyIcon
 import ir.amirab.util.compose.resources.myStringResource
 import ir.amirab.util.desktop.screen.applyUiScale
@@ -200,12 +201,12 @@ private fun <T> DropDownHeader(
     onClick: () -> Unit,
     renderItem: @Composable (T) -> Unit,
 ) {
-    val borderColor = myColors.onBackground / 0.1f
-    val background = myColors.surface / 50
+    val borderColor = myColors.divider
+    val background = Color(0xFF1F1F1F)
     val shape = myShapes.defaultRounded
     Row(
         Modifier
-            .height(IntrinsicSize.Max)
+            .height(24.dp)
             .clip(shape)
             .ifThen(!enabled) {
                 alpha(0.5f)
@@ -215,10 +216,11 @@ private fun <T> DropDownHeader(
             .clickable(
                 enabled = enabled
             ) { onClick() }
-            .padding(horizontal = 8.dp)
+            .padding(start = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         val contentModifier = Modifier
-            .padding(vertical = 8.dp)
+            .padding(vertical = 2.dp)
             .weight(1f)
         if (item != null) {
             Box(contentModifier) {
@@ -227,22 +229,24 @@ private fun <T> DropDownHeader(
         } else {
             Text(
                 myStringResource(Res.string.no_category_selected),
-                contentModifier
+                contentModifier,
+                fontSize = myTextSizes.sm
             )
         }
-        Spacer(
+        Box(
             Modifier
-                .padding(horizontal = 8.dp)
-                .fillMaxHeight().padding(vertical = 1.dp)
-                .width(1.dp)
-                .background(borderColor)
-        )
-        MyIcon(
-            MyIcons.down,
-            null,
-            Modifier
-                .align(Alignment.CenterVertically)
-                .size(16.dp),
-        )
+                .fillMaxHeight()
+                .width(22.dp)
+                .background(myColors.primary),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                MyIcon(MyIcons.up, null, Modifier.size(8.dp), tint = Color.White)
+                MyIcon(MyIcons.down, null, Modifier.size(8.dp), tint = Color.White)
+            }
+        }
     }
 }

@@ -98,13 +98,13 @@ fun <T> RenderSpinner(
 //    minWidth:Dp,
     render: @Composable (T) -> Unit,
 ) {
-    val verticalPadding = 4.dp
-    val horizontalPadding = 4.dp
+    val verticalPadding = 2.dp
+    val horizontalPadding = 8.dp
 
     var isOpen by remember { mutableStateOf(false) }
     val shape = myShapes.defaultRounded
     val borderWidth = 1.dp
-    val borderColor = myColors.onBackground / 10
+    val borderColor = myColors.divider
     var widthForPopup by remember {
         mutableStateOf(0.dp)
     }
@@ -112,17 +112,15 @@ fun <T> RenderSpinner(
     Box {
         Row(
             modifier = modifier
-//                .widthIn(min = minWidth)
                 .clip(shape)
-                .height(IntrinsicSize.Max)
+                .height(24.dp)
                 .onGloballyPositioned {
                     widthForPopup = with(density) {
                         it.size.width.toDp()
                     }
                 }
-                .background(myColors.surface)
+                .background(Color(0xFF1F1F1F))
                 .border(borderWidth, borderColor, shape)
-                .heightIn(mySpacings.thumbSize)
                 .clickable(enabled = enabled) {
                     isOpen = true
                 },
@@ -132,18 +130,26 @@ fun <T> RenderSpinner(
             WithContentAlpha(1f) {
                 Box(
                     Modifier
+                        .weight(1f)
                         .padding(vertical = verticalPadding)
                         .padding(horizontal = horizontalPadding)
                 ) {
                     render(value)
                 }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Spacer(
-                        Modifier.fillMaxHeight()
-                            .padding(vertical = borderWidth)
-                            .width(borderWidth).background(myColors.onBackground / 10)
-                    )
-                    MyIcon(MyIcons.down, null, Modifier.padding(4.dp).size(mySpacings.iconSize))
+                Box(
+                    Modifier
+                        .fillMaxHeight()
+                        .width(22.dp)
+                        .background(myColors.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        MyIcon(MyIcons.up, null, Modifier.size(8.dp), tint = Color.White)
+                        MyIcon(MyIcons.down, null, Modifier.size(8.dp), tint = Color.White)
+                    }
                 }
             }
         }

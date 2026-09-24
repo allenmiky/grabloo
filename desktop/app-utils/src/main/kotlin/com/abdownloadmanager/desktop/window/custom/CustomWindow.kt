@@ -4,6 +4,7 @@ import com.abdownloadmanager.shared.util.ui.WithContentColor
 import ir.amirab.util.compose.IconSource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -74,18 +75,19 @@ private fun FrameWindowScope.CustomWindowFrame(
 ) {
 //    val borderColor = MaterialTheme.colors.surface
     WithContentColor(onBackground) {
-        Column(
+        val windowShape = if (isWindowFloating()) androidx.compose.foundation.shape.RoundedCornerShape(4.dp) else RectangleShape
+        val frameModifier = if (isWindowFloating()) {
             Modifier
                 .fillMaxSize()
-                .ifThen(!JBR.isWindowDecorationsSupported()) {
-                    ifThen(isWindowFloating()) {
-                        val borderColor = if (isLight) Color.LightGray else Color.DarkGray
-                        border(1.dp, borderColor, RectangleShape)
-                            .padding(1.dp)
-                    }
-                }
+                .clip(windowShape)
+                .border(1.dp, Color.Black, windowShape)
                 .background(background)
-        ) {
+        } else {
+            Modifier
+                .fillMaxSize()
+                .background(background)
+        }
+        Column(frameModifier) {
             WithTitleBarDirection {
                 SnapDraggableToolbar(
                     title = title,

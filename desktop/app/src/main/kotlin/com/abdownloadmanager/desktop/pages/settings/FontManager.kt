@@ -32,7 +32,7 @@ class FontManager(
             id = DEFAULT_FONT_ID,
             uri = "",
             name = Res.string.default.asStringSource(),
-            fontFamily = FontFamily.Default,
+            fontFamily = FontFamily.Monospace,
         )
 
         fun getUsableFontFamilyNamesOfSystem(): List<String> {

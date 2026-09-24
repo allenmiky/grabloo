@@ -260,8 +260,8 @@ private fun RenderProgressBar(itemState: IDownloadItemState) {
     Box(
         Modifier
             .fillMaxWidth()
-            .clip(myShapes.defaultRounded)
-            .height(14.dp)
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(3.dp))
+            .height(5.dp)
             .background(myColors.onBackground / 15)
     ) {
         progress?.let { progress ->

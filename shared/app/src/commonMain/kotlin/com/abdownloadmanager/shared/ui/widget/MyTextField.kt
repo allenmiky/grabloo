@@ -47,13 +47,13 @@ fun MyTextField(
     onTextChange: (String) -> Unit,
     placeholder: String,
     modifier: Modifier,
-    background: Color = myColors.surface,
+    background: Color = Color(0xFF1F1F1F),
     contentColor: Color = myColors.getContentColorFor(background).takeIf { it.isSpecified }
         ?: LocalContentColor.current,
-    focusedBorderColor: Color = myColors.primary,
-    borderColor: Color = myColors.onBackground / 0.1f,
-    shape: Shape = myShapes.defaultRounded,
-    textPadding: PaddingValues = PaddingValues(8.dp),
+    focusedBorderColor: Color = Color(0xFF2F7BF2),
+    borderColor: Color = Color(0xFF404040),
+    shape: Shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp),
+    textPadding: PaddingValues = PaddingValues(horizontal = 7.dp, vertical = 3.dp),
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     fontSize: TextUnit = TextUnit.Unspecified,
     enabled: Boolean = true,
@@ -76,9 +76,8 @@ fun MyTextField(
                 alpha(0.5f)
             }
             .clip(shape)
-            .heightIn(mySpacings.thumbSize)
+            .heightIn(min = 24.dp)
             .height(IntrinsicSize.Max)
-//            .height(32.dp)
             .pointerHoverIcon(
                 if (enabled) PointerIcon.Text
                 else PointerIcon.Default
@@ -94,6 +93,13 @@ fun MyTextField(
                 interactionSource = null,
             ) {
                 focusRequester.requestFocus()
+            }
+            .ifThen(isFocused) {
+                border(
+                    2.dp,
+                    Color(0x732F7BF2),
+                    shape
+                )
             }
             .border(
                 1.dp,
@@ -143,7 +149,7 @@ fun MyTextField(
                         Text(
                             text = placeholder,
                             maxLines = 1,
-                            color = contentColor / 50,
+                            color = Color(0xFF93939A),
                             fontSize = textSize
                         )
                     }

@@ -42,7 +42,7 @@ import sh.calvin.reorderable.ReorderableColumn
 import sh.calvin.reorderable.ReorderableListItemScope
 
 val LocalCellPadding = compositionLocalOf {
-    PaddingValues(horizontal = 4.dp, vertical = 0.dp)
+    PaddingValues(horizontal = 8.dp, vertical = 4.dp)
 }
 val LocalTableSize = compositionLocalOf<TableSize> {
     error("LocalTableConstraints not provided")

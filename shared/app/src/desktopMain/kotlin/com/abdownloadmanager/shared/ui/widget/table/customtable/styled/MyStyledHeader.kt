@@ -30,7 +30,7 @@ fun TableScope.MyStyledTableHeader(
                 .clip(shape)
                 .border(0.5.dp, myColors.divider, shape)
                 .background(myColors.toolbar)
-                .padding(vertical = 7.dp, horizontal = itemHorizontalPadding)
+                .padding(vertical = 3.dp, horizontal = itemHorizontalPadding)
         ) {
             content()
         }

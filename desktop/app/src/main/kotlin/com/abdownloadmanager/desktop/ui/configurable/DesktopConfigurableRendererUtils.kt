@@ -31,9 +31,10 @@ import ir.amirab.util.ifThen
 fun <T> TitleAndDescription(
     cfg: Configurable<T>,
     describe: Boolean = true,
-    modifier: Modifier = Modifier.padding(8.dp),
+    modifier: Modifier = Modifier.padding(4.dp),
 ) {
     val enabled = isConfigEnabled()
+    val desc = cfg.description.rememberString()
     Column(
         modifier.ifThen(!enabled) {
             alpha(0.5f)
@@ -43,30 +44,30 @@ fun <T> TitleAndDescription(
             Text(
                 cfg.title.rememberString(),
                 fontSize = myTextSizes.base,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f, false)
             )
-            if (cfg.description.rememberString().isNotBlank()) {
-                Spacer(Modifier.size(4.dp))
-                Help(
-                    Modifier.align(Alignment.Top),
-                    cfg
-                )
-            }
         }
-        if (describe) {
+        if (desc.isNotBlank()) {
+            Spacer(Modifier.height(1.dp))
+            Text(
+                desc,
+                fontSize = myTextSizes.sm,
+                color = com.abdownloadmanager.shared.util.ui.myColors.dimText,
+            )
+        } else if (describe) {
             val value = cfg.backedBy.collectAsState().value
             val describedStringSource = remember(value) {
                 cfg.describe(value)
             }
             val describeContent = describedStringSource.rememberString()
             if (describeContent.isNotBlank()) {
-                WithContentAlpha(0.75f) {
-                    Text(
-                        describeContent,
-                        fontSize = myTextSizes.base,
-                    )
-                }
+                Spacer(Modifier.height(1.dp))
+                Text(
+                    describeContent,
+                    fontSize = myTextSizes.sm,
+                    color = com.abdownloadmanager.shared.util.ui.myColors.dimText,
+                )
             }
         }
     }

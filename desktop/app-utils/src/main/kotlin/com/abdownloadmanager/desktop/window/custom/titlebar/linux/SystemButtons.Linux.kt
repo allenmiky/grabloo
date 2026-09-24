@@ -27,6 +27,7 @@ import com.abdownloadmanager.desktop.window.custom.titlebar.SystemButtonType.*
 import com.abdownloadmanager.shared.util.div
 import com.abdownloadmanager.shared.util.ui.icon.MyIcons
 import com.abdownloadmanager.shared.util.ui.myColors
+import com.abdownloadmanager.desktop.window.custom.titlebar.mac.MacOSSystemButtons
 
 @Composable
 private fun SystemButton(
@@ -86,53 +87,10 @@ internal fun LinuxSystemButtons(
     onToggleMaximize: (() -> Unit)?,
     buttons: List<SystemButtonType>,
 ) {
-    Row(
-        // Toolbar is aligned center vertically, so I fill that and place it on top
-        modifier = Modifier
-            .padding(horizontal = 6.dp)
-            .fillMaxHeight().wrapContentHeight(Alignment.Top),
-        verticalAlignment = Alignment.Top
-    ) {
-        buttons.forEach {
-            when (it) {
-                Close -> {
-                    WindowCloseButtonTooltip {
-                        SystemButton(
-                            onRequestClose,
-                            icon = MyIcons.windowClose,
-                            modifier = Modifier,
-                        )
-                    }
-                }
-
-                Minimize -> {
-                    onRequestMinimize?.let {
-                        WindowMinimizeTooltip {
-                            SystemButton(
-                                icon = MyIcons.windowMinimize,
-                                onClick = onRequestMinimize,
-                                modifier = Modifier
-                            )
-                        }
-                    }
-                }
-
-                Maximize -> {
-                    onToggleMaximize?.let {
-                        WindowToggleMaximizeTooltip {
-                            SystemButton(
-                                icon = if (isWindowMaximized()) {
-                                    MyIcons.windowFloating
-                                } else {
-                                    MyIcons.windowMaximize
-                                },
-                                onClick = onToggleMaximize,
-                                modifier = Modifier
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
+    MacOSSystemButtons(
+        onRequestClose = onRequestClose,
+        onRequestMinimize = onRequestMinimize,
+        onToggleMaximize = onToggleMaximize,
+        buttons = buttons,
+    )
 }
