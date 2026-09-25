@@ -7,8 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.onClick
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -142,11 +140,8 @@ fun AddUrlDialog(
                 .widthIn(min = 380.dp, max = 460.dp)
         ) {
             WithContentColor(myColors.onBackground) {
-                androidx.compose.foundation.layout.Column(
-                    Modifier
-                        .padding(14.dp)
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
+                Column(
+                    Modifier.padding(14.dp)
                 ) {
                     Text(
                         myStringResource(Res.string.add_download),
