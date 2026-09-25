@@ -41,6 +41,7 @@ fun MyTextFieldWithIcons(
     enabled: Boolean = true,
     singleLine: Boolean = true,
     minLines: Int = 1,
+    maxLines: Int = Int.MAX_VALUE,
     start: @Composable (() -> Unit)? = null,
     end: @Composable (() -> Unit)? = null,
 ) {
@@ -63,6 +64,7 @@ fun MyTextFieldWithIcons(
             shape = myShapes.defaultRounded,
             singleLine = singleLine,
             minLines = minLines,
+            maxLines = maxLines,
             enabled = enabled,
             start = start?.let {
                 {

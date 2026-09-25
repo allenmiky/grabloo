@@ -142,7 +142,10 @@ fun AddUrlDialog(
             ) {
                 WithContentColor(myColors.onBackground) {
                     Column(
-                        Modifier.padding(16.dp)
+                        Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
                     ) {
                         Text(
                             myStringResource(Res.string.add_download),
@@ -430,8 +433,8 @@ private fun UrlTextArea(
         myStringResource(Res.string.download_link),
         modifier = modifier.fillMaxWidth(),
         singleLine = false,
-        minLines = 3,
-        maxLines = 6,
+        minLines = 1,
+        maxLines = 3,
         start = {
             MyIcon(
                 MyIcons.link,
