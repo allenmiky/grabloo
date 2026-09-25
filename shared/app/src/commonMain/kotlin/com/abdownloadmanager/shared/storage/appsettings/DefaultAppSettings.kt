@@ -33,7 +33,7 @@ abstract class DefaultAppSettings {
     open val errorNotificationSound: String get() = ""
     open val defaultDownloadFolder: String
         get() = PlatformDownloadLocationProvider.instance.getDownloadLocation()
-            .resolve("ABDM").canonicalFile.absolutePath
+            .resolve("Grabbo").canonicalFile.absolutePath
     open val apiEnabled: Boolean get() = true
     open val apiPort: Int get() = 15151
     open val apiAuthEnabled: Boolean get() = false

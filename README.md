@@ -1,26 +1,23 @@
 <div align="center">
-  <a href="https://abdownloadmanager.com" target="_blank">
-    <img width="180" src="assets/logo/app_logo_with_background.svg" alt="AB Download Manager Logo">
+  <a href="https://github.com/allenmiky/grabloo" target="_blank">
+    <img width="180" src="assets/logo/grabbo_logo.png" alt="Grabbo Logo">
   </a>
 </div>
-<h1 align="center">AB Download Manager</h1>
+<h1 align="center">Grabbo</h1>
 <p align="center">
     <a href="https://github.com/amir1376/ab-download-manager/releases/latest"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/amir1376/ab-download-manager?color=greenlight&label=latest%20release"></a>
-    <a href="https://abdownloadmanager.com"><img alt="AB Download Manager Website" src="https://img.shields.io/badge/project-website-purple?&labelColor=gray"></a>
-    <a href="https://t.me/abdownloadmanager"><img alt="Telegram Channel" src="https://img.shields.io/badge/Telegram-Channel-blue?logo=telegram&labelColor=gray"></a>
-    <a href="https://t.me/abdownloadmanager_discussion"><img alt="Telegram Group" src="https://img.shields.io/badge/Telegram-Group-blue?logo=telegram&labelColor=gray"></a>
-    <a href="https://crowdin.com/project/ab-download-manager"><img alt="Crowdin" src="https://badges.crowdin.net/ab-download-manager/localized.svg"></a>
+    <a href="https://github.com/allenmiky/grabloo"><img alt="Grabbo Website" src="https://img.shields.io/badge/project-website-purple?&labelColor=gray"></a>
 </p>
 
-<a href="https://abdownloadmanager.com" target="_blank">
-    <img alt="AB Download Manager Banner" src="assets/banners/app_banner.png"/>
+<a href="https://github.com/allenmiky/grabloo" target="_blank">
+    <img alt="Grabbo Banner" src="assets/banners/app_banner.png"/>
 </a>
 
 ## Introduction
 
-[AB Download Manager](https://abdownloadmanager.com) is a desktop app that helps you manage and organize your downloads more efficiently than ever before.
+[Grabbo](https://github.com/allenmiky/grabloo) is a desktop app that helps you manage and organize your downloads more efficiently than ever before.
 
-Based on AB Download Manager by amir1376.
+Originally developed by amir1376.
 
 ## Features
 
@@ -31,7 +28,7 @@ Based on AB Download Manager by amir1376.
 - 🌙 Multiple Themes (Dark/Light/Black and more) with modern UI
 - ❤️ Free and Open Source
 
-Please visit [Project Website](https://abdownloadmanager.com) for more info.
+Please visit [Project Website](https://github.com/allenmiky/grabloo) for more info.
 
 ## Installation
 
@@ -39,7 +36,7 @@ Please visit [Project Website](https://abdownloadmanager.com) for more info.
 
 ### Download and Install the App
 
-<a href="https://abdownloadmanager.com"><img src="https://img.shields.io/badge/Official%20Website-897BFF?logo=abdownloadmanager&logoColor=fff&style=flat-square" alt="Official Website" height="32" /></a>
+<a href="https://github.com/allenmiky/grabloo"><img src="https://img.shields.io/badge/Official%20Website-897BFF?logo=github&logoColor=fff&style=flat-square" alt="Official Website" height="32" /></a>
 <a href="https://github.com/amir1376/ab-download-manager/releases/latest"><img src="https://img.shields.io/badge/GitHub%20Releases-2a2f36?logo=github&logoColor=fff&style=flat-square" alt="GitHub Releases" height="32" /></a>
 
 #### Installation script (Linux)
@@ -84,7 +81,7 @@ You can download the browser extension to integrate the app with your browser.
 <p align="left">
 <a href="https://addons.mozilla.org/firefox/addon/ab-download-manager/">
     <picture>
-        <img alt="Chrome Extension" src="./assets/banners/firefox-extension.png" height="48">
+        <img alt="Firefox Extension" src="./assets/banners/firefox-extension.png" height="48">
     </picture>
 </a>
 <a href="https://chromewebstore.google.com/detail/bbobopahenonfdgjgaleledndnnfhooj">
@@ -114,19 +111,17 @@ You can download the browser extension to integrate the app with your browser.
 
 ## Community
 
-- 📢 [Telegram Channel](https://t.me/abdownloadmanager) – News, announcements, and release updates.
-- 💬 [Telegram Group](https://t.me/abdownloadmanager_discussion) – Get help, report bugs, suggest features, and discuss
-  the project with the community.
+Join the discussion on [GitHub Discussions](https://github.com/amir1376/ab-download-manager/discussions).
 
 ## Repositories And Source Code
 
-There are multiple repositories related to the **AB Download Manager** project:
+There are multiple repositories related to the **Grabbo** project:
 
 | Repository                                                                                 | Description                                                                   |
 |--------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
 | [Main Application](https://github.com/amir1376/ab-download-manager) (You are here)         | Contains the  **Application** that runs on your  **device**                   |
 | [Browser Integration](https://github.com/amir1376/ab-download-manager-browser-integration) | Contains the **Browser Extension** to be installed on your  **browser**       |
-| [Website](https://github.com/amir1376/ab-download-manager-website)                         | Contains the **AB Download Manager** [website](https://abdownloadmanager.com) |
+| [Website](https://github.com/amir1376/ab-download-manager-website)                         | Contains the **Grabbo** [website](https://github.com/allenmiky/grabloo) |
 
 I've spent a lot of time to create this project.
 
@@ -164,12 +159,9 @@ follow these steps:
 
 ## Translations
 
-<a href="https://crowdin.com/project/ab-download-manager"><img alt="Crowdin" src="https://badges.crowdin.net/ab-download-manager/localized.svg"></a>
+If you'd like to help translate Grabbo into another language, or improve existing translations, you can do so on Crowdin when the project is migrated. Here's how:
 
-If you’d like to help translate AB Download Manager into another language, or improve existing translations, you can do
-so on Crowdin. Here’s how:
-
-- Visit the project in [Crowdin](https://crowdin.com/project/ab-download-manager)
+- Visit the project on Crowdin (link TBD)
 - Please DO NOT submit translations via pull requests.
 - If you want to add a new language, please see [this](https://github.com/amir1376/ab-download-manager/issues/144).
 
@@ -179,5 +171,5 @@ If you want to contribute to this project, please read [Contributing Guide](CONT
 
 ## Support the Project
 
-If you'd like to support the project, you can find details on how to donate in the [DONATE.md](DONATE.md) file.
+If you'd like to support the project, see [DONATE.md](DONATE.md) for details.
 # grabloo

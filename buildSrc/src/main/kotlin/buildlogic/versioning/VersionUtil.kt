@@ -36,6 +36,10 @@ fun Project.getApplicationPackageName(): String {
     return "com.abdownloadmanager"
 }
 
+fun Project.getPublicApplicationPackageName(): String {
+    return "com.grabbo.app"
+}
+
 fun Project.getAppVersionStringForPackaging(targetFormat: TargetFormat? = null): String {
     val v = getAppVersion()
     val simple = { v.run { "$major.$minor.$patch" } }

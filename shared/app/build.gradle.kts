@@ -107,7 +107,7 @@ buildConfig {
     buildConfigField(
         "PROJECT_WEBSITE",
         provider {
-            "https://abdownloadmanager.com"
+            "https://github.com/allenmiky/grabloo"
         }
     )
     buildConfigField(
@@ -119,7 +119,7 @@ buildConfig {
     buildConfigField(
         "DONATE_LINK",
         provider {
-            "https://abdownloadmanager.com/donate"
+            ""
         }
     )
     buildConfigField(
@@ -137,19 +137,19 @@ buildConfig {
     buildConfigField(
         "PROJECT_TRANSLATIONS",
         provider {
-            "https://crowdin.com/project/ab-download-manager"
+            ""
         }
     )
     buildConfigField(
         "INTEGRATION_CHROME_LINK",
         provider {
-            "https://chromewebstore.google.com/detail/ab-download-manager-brows/bbobopahenonfdgjgaleledndnnfhooj"
+            ""
         }
     )
     buildConfigField(
         "INTEGRATION_FIREFOX_LINK",
         provider {
-            "https://addons.mozilla.org/en-US/firefox/addon/ab-download-manager/"
+            ""
         }
     )
     buildConfigField(
@@ -167,13 +167,13 @@ buildConfig {
     buildConfigField(
         "TELEGRAM_GROUP",
         provider {
-            "https://t.me/abdownloadmanager_discussion"
+            ""
         }
     )
     buildConfigField(
         "TELEGRAM_CHANNEL",
         provider {
-            "https://t.me/abdownloadmanager"
+            ""
         }
     )
 }

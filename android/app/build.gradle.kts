@@ -3,7 +3,7 @@ import buildlogic.versioning.convertToVersionCode
 import buildlogic.versioning.getAppName
 import buildlogic.versioning.getAppVersion
 import buildlogic.versioning.getAppVersionString
-import buildlogic.versioning.getApplicationPackageName
+import buildlogic.versioning.getPublicApplicationPackageName
 import com.android.build.api.artifact.SingleArtifact
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule
@@ -27,7 +27,7 @@ android {
     defaultConfig {
         minSdk = 26
         targetSdk = compileSdkVersion
-        applicationId = getApplicationPackageName()
+        applicationId = getPublicApplicationPackageName()
         versionCode = getAppVersion().convertToVersionCode()
         versionName = getAppVersionString()
     }
@@ -36,7 +36,7 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
-            resValue("string", "app_short_name", "AB DM - Debug")
+            resValue("string", "app_short_name", "Grabbo - Debug")
         }
     }
     buildFeatures {

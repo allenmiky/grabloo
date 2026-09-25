@@ -1,17 +1,18 @@
 package com.abdownloadmanager.shared.util.ui.icon
 
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import com.abdownloadmanager.resources.icons.ABDMIcons
 import com.abdownloadmanager.resources.icons.*
 import com.abdownloadmanager.shared.util.ui.BaseMyColors
 import ir.amirab.util.compose.IconSource
+import ir.amirab.util.compose.contants.ICON_PROTOCOL
 
 object MyIcons : BaseMyColors() {
-    // TODO(rebrand): leave the logo as the original AB Download Manager one for now.
-    //  To finish the "Grabbo" rebrand, replace these logo assets:
-    //   - the ImageVector below (shared/resources AppIcon.kt, brand gradient #C631FF->#4DC4FE)
-    //   - desktop/app/icons/{icon.png, icon.ico, icon.icns} (window/installer/tray icons)
-    //   - android/app/src/main/res/mipmap-*/ic_launcher*.webp (launcher icons)
-    override val appIcon = ABDMIcons.AppIcon.asIconSource("appIcon", false)
+    override val appIcon = IconSource.PainterIconSource(
+        value = BitmapPainter(loadGrabboLogo()),
+        requiredTint = false,
+        uri = "$ICON_PROTOCOL:appIcon"
+    ).asIconSource()
 
     override val settings = ABDMIcons.Settings.asIconSource("settings")
     override val flag = ABDMIcons.Flag.asIconSource("flag")

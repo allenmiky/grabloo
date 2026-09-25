@@ -13,7 +13,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ABDownloadManager"
+rootProject.name = "Grabbo"
 
 include("android:app")
 include("desktop:app")

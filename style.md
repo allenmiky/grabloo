@@ -1,4 +1,4 @@
-# AB Download Manager - UI Styling & Progress Report (`style.md`)
+# Grabbo - UI Styling & Progress Report (`style.md`)
 
 ## 1. Browser Extension Customization (`ab-download-manager-browser-integration`)
 Extension ka source code add ho chuka hai aur uske tamam buttons, icons aur styling user ke dark theme layout ke mutabiq successfully customize aur build kar diye gaye hain:
