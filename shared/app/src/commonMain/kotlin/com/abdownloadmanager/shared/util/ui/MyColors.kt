@@ -52,6 +52,8 @@ data class MyColors(
     val toolbar: Color = surface,
     val divider: Color = onBackground / 0.15f,
     val dimText: Color = onBackground.copy(alpha = 0.62f),
+    // inputs/selects/controls background ("--ctl" in the Grabbo theme)
+    val control: Color = Color(0xFF1F1F1F),
     // table selection & rows
     val selectedRow: Color = primaryVariant,
     val selectedRowText: Color = Color.White,
@@ -189,6 +191,7 @@ private object AnimateMyColors {
             toolbar = toBeAnimated.toolbar,
             divider = toBeAnimated.divider,
             dimText = toBeAnimated.dimText,
+            control = toBeAnimated.control,
             selectedRow = toBeAnimated.selectedRow,
             selectedRowText = toBeAnimated.selectedRowText,
             selectedRowDimText = toBeAnimated.selectedRowDimText,

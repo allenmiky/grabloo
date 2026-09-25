@@ -75,7 +75,7 @@ private fun FrameWindowScope.CustomWindowFrame(
 ) {
 //    val borderColor = MaterialTheme.colors.surface
     WithContentColor(onBackground) {
-        val windowShape = if (isWindowFloating()) androidx.compose.foundation.shape.RoundedCornerShape(4.dp) else RectangleShape
+        val windowShape = if (isWindowFloating()) androidx.compose.foundation.shape.RoundedCornerShape(5.dp) else RectangleShape
         val frameModifier = if (isWindowFloating()) {
             Modifier
                 .fillMaxSize()

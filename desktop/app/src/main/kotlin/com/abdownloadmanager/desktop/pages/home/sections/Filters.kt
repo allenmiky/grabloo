@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.abdownloadmanager.resources.Res
 import com.abdownloadmanager.shared.ui.widget.MyTextFieldIcon
@@ -33,16 +32,13 @@ fun SearchBox(
     placeholder: String = myStringResource(Res.string.search_in_the_list),
     modifier: Modifier,
 ) {
-    val shape = RoundedCornerShape(4.dp)
+    val shape = RoundedCornerShape(5.dp)
     val textSize = myTextSizes.base
     MyTextField(
         text = text,
         fontSize = textSize,
         onTextChange = onTextChange,
         shape = shape,
-        background = Color(0xFF1F1F1F),
-        borderColor = Color(0xFF404040),
-        focusedBorderColor = Color(0xFF2F7BF2),
         textPadding = textPadding,
         interactionSource = interactionSource,
         start = {

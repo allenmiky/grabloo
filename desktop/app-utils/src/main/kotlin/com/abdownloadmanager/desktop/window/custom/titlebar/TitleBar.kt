@@ -47,7 +47,7 @@ interface TitleBar {
     )
 
     companion object {
-        val DefaultTitleBarHeigh = 32.dp
+        val DefaultTitleBarHeigh = 30.dp
         fun getPlatformTitleBar(): TitleBar {
             return when (Platform.asDesktop()) {
                 Platform.Desktop.Windows -> WindowsTitleBar

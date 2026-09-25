@@ -202,7 +202,7 @@ private fun <T> DropDownHeader(
     renderItem: @Composable (T) -> Unit,
 ) {
     val borderColor = myColors.divider
-    val background = Color(0xFF1F1F1F)
+    val background = myColors.control
     val shape = myShapes.defaultRounded
     Row(
         Modifier

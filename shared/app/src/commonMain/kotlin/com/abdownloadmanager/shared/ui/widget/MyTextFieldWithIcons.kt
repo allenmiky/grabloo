@@ -40,6 +40,7 @@ fun MyTextFieldWithIcons(
     errorText: String? = null,
     enabled: Boolean = true,
     singleLine: Boolean = true,
+    minLines: Int = 1,
     start: @Composable (() -> Unit)? = null,
     end: @Composable (() -> Unit)? = null,
 ) {
@@ -61,6 +62,7 @@ fun MyTextFieldWithIcons(
             interactionSource = interactionSource,
             shape = myShapes.defaultRounded,
             singleLine = singleLine,
+            minLines = minLines,
             enabled = enabled,
             start = start?.let {
                 {

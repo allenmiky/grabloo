@@ -20,6 +20,15 @@ fun Color.darker(amount: Float = 0.1f): Color {
     return toHsl().apply { laminate -= amount }.toColor()
 }
 
+fun Color.brighten(factor: Float = 1.12f): Color {
+    return Color(
+        red = (red * factor).coerceAtMost(1f),
+        green = (green * factor).coerceAtMost(1f),
+        blue = (blue * factor).coerceAtMost(1f),
+        alpha = alpha,
+    )
+}
+
 
 @JvmInline
 value class HSLColor(val hsl: FloatArray) {

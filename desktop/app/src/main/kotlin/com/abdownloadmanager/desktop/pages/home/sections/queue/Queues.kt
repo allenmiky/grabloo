@@ -123,7 +123,7 @@ private fun QueueSidebarItem(
                 onDragDone = { isDraggingOnMe = false },
                 onItemsDropped = onItemsDroppedInQueue,
             )
-            .clip(RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(5.dp))
             .background(
                 if (isSelected) myColors.selectedRow
                 else if (isHovered) myColors.onBackground / 0.05f

@@ -128,7 +128,9 @@ fun DownloadList(
         )
     ) {
         val itemHorizontalPadding = 16.dp
-        Box(modifier) {
+        Box(
+            modifier.background(myColors.panel)
+        ) {
             Table(
                 tableState = tableState,
                 listState = lazyListState,
@@ -347,13 +349,13 @@ fun DownloadList(
                     MyIcon(
                         icon = MyIcons.appIcon,
                         contentDescription = null,
-                        tint = Color(0xFF2F7BF2).copy(alpha = 0.35f),
+                        tint = myColors.primary.copy(alpha = 0.35f),
                         modifier = Modifier.size(130.dp)
                     )
                     Spacer(Modifier.height(16.dp))
                     Text(
                         text = "No downloads here. Click Add URL to start.",
-                        color = Color(0xFF93939A),
+                        color = myColors.dimText,
                         fontSize = 12.sp,
                     )
                 }

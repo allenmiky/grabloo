@@ -46,7 +46,7 @@ fun MenuBar(
             Box {
                 Box(
                     Modifier
-                        .clip(RoundedCornerShape(4.dp))
+                        .clip(RoundedCornerShape(5.dp))
                         .hoverable(interactionSource)
                         .clickable {
                             openedItem = if (isSelected) null else subMenu

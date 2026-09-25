@@ -7,6 +7,7 @@ import com.abdownloadmanager.desktop.pages.batchdownload.DesktopBatchDownloadCom
 import com.abdownloadmanager.desktop.pages.category.DesktopCategoryDialogManager
 import com.abdownloadmanager.desktop.pages.checksum.DesktopFileChecksumComponent
 import com.abdownloadmanager.desktop.pages.editdownload.DesktopEditDownloadComponent
+import com.abdownloadmanager.desktop.pages.enterurl.AddUrlDialogComponent
 import com.abdownloadmanager.desktop.pages.enterurl.DesktopEnterNewURLComponent
 import com.abdownloadmanager.desktop.pages.home.HomeComponent
 import com.abdownloadmanager.desktop.pages.perhostsettings.DesktopPerHostSettingsComponent
@@ -1094,27 +1095,23 @@ class AppComponent(
     }
 
     val enterNewURLWindow = SlotNavigation<DesktopEnterNewURLComponent.Config>()
-    val enterNewURLWindowSlot = childSlot(
+    val addUrlDialogSlot = childSlot(
         enterNewURLWindow,
         serializer = null,
-        key = "enterNewURLWindow",
-        childFactory = { configuration: DesktopEnterNewURLComponent.Config, componentContext: ComponentContext ->
-            DesktopEnterNewURLComponent(
+        key = "addUrlDialog",
+        childFactory = { config: DesktopEnterNewURLComponent.Config, componentContext: ComponentContext ->
+            AddUrlDialogComponent.create(
                 ctx = componentContext,
-                config = configuration,
-                downloaderInUiRegistry = downloaderInUiRegistry,
-                onCloseRequest = {
-                    closeEnterNewURLWindow()
-                },
-                onRequestFinished = { credentials ->
+                appRepository = appRepository,
+                queueManager = queueManager,
+                selectQueueStorage = selectQueueStorage,
+                categoryManager = categoryManager,
+                perHostSettingsManager = perHostSettingsManager,
+                lastSavedLocationsStorage = pageStatesStorage,
+                downloadSystem = downloadSystem,
+                onRequestAdd = { credsList ->
                     scope.launch {
-                        openAddDownloadDialog(
-                            links = listOf(
-                                AddDownloadCredentialsInUiProps(
-                                    credentials = credentials
-                                )
-                            ),
-                        )
+                        openAddDownloadDialog(credsList)
                     }
                 }
             )
@@ -1123,13 +1120,11 @@ class AppComponent(
 
     override fun openEnterNewURLWindow() {
         scope.launch {
-            enterNewURLWindowSlot.value.child?.instance.let {
+            addUrlDialogSlot.value.child?.instance.let {
                 if (it != null) {
                     it.bringToFront()
                 } else {
-                    enterNewURLWindow.activate(
-                        DesktopEnterNewURLComponent.Config
-                    )
+                    enterNewURLWindow.activate(DesktopEnterNewURLComponent.Config)
                 }
             }
         }

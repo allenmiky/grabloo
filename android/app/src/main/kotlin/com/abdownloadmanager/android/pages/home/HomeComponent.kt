@@ -4,6 +4,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import com.abdownloadmanager.android.action.createOpenBrowserAction
+import com.abdownloadmanager.android.pages.enterurl.AddUrlDialogComponent
 import com.abdownloadmanager.android.pages.enterurl.AndroidEnterNewURLComponent
 import com.abdownloadmanager.android.pages.home.sections.sort.DownloadSortBy
 import com.abdownloadmanager.android.storage.HomePageStorage
@@ -45,6 +46,9 @@ import com.abdownloadmanager.shared.pages.adddownload.AddDownloadCredentialsInUi
 import com.abdownloadmanager.shared.pages.home.BaseHomeComponent
 import com.abdownloadmanager.shared.pages.home.category.DefinedStatusCategories
 import com.abdownloadmanager.shared.pages.home.category.DownloadStatusCategoryFilter
+import com.abdownloadmanager.shared.repository.BaseAppRepository
+import com.abdownloadmanager.shared.storage.ISelectQueueStorage
+import com.abdownloadmanager.shared.storage.ILastSavedLocationsStorage
 import com.abdownloadmanager.shared.pages.updater.UpdateComponent
 import com.abdownloadmanager.shared.ui.widget.sort.Sort
 import com.abdownloadmanager.shared.ui.widget.sort.sorted
@@ -123,23 +127,30 @@ class HomeComponent(
     defaultCategories,
     fileIconProvider,
 ), EnterNewURLDialogManager {
+    private val appRepository: BaseAppRepository by inject()
+    private val perHostSettingsManager: PerHostSettingsManager by inject()
+    private val selectQueueStorage: ISelectQueueStorage by inject()
+    private val lastSavedLocationsStorage: ILastSavedLocationsStorage by inject()
+    
     private val enterNewLinkNavigation = SlotNavigation<AndroidEnterNewURLComponent.Config>()
-    val enterNewLinkSlot = childSlot(
-        source = enterNewLinkNavigation,
+    val addUrlDialogSlot = childSlot(
+        enterNewLinkNavigation,
         serializer = null,
-        key = "enterNewLinkSlot",
+        key = "addUrlDialogSlot",
         childFactory = { configuration, context ->
-            AndroidEnterNewURLComponent(
+            AddUrlDialogComponent.create(
                 ctx = context,
-                config = configuration,
-                downloaderInUiRegistry = downloaderInUiRegistry,
-                onCloseRequest = {
-                    closeEnterNewURLWindow()
-                },
-                onRequestFinished = {
-                    addDownloadDialogManager.openAddDownloadDialog(
-                        links = listOf(AddDownloadCredentialsInUiProps(it))
-                    )
+                appRepository = appRepository,
+                queueManager = queueManager,
+                selectQueueStorage = selectQueueStorage,
+                categoryManager = categoryManager,
+                perHostSettingsManager = perHostSettingsManager,
+                lastSavedLocationsStorage = lastSavedLocationsStorage,
+                downloadSystem = downloadSystem,
+                onRequestAdd = { credsList ->
+                    scope.launch {
+                        addDownloadDialogManager.openAddDownloadDialog(credsList)
+                    }
                 }
             )
         }
@@ -153,7 +164,13 @@ class HomeComponent(
 
     override fun openEnterNewURLWindow() {
         scope.launch {
-            enterNewLinkNavigation.activate(AndroidEnterNewURLComponent.Config)
+            addUrlDialogSlot.value.child?.instance.let {
+                if (it != null) {
+                    it.bringToFront()
+                } else {
+                    enterNewLinkNavigation.activate(AndroidEnterNewURLComponent.Config)
+                }
+            }
         }
     }
 

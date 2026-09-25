@@ -16,17 +16,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.abdownloadmanager.shared.util.brighten
 import com.abdownloadmanager.shared.util.div
-import com.abdownloadmanager.shared.util.ui.LocalContentColor
 import com.abdownloadmanager.shared.util.ui.WithContentAlpha
 import com.abdownloadmanager.shared.util.ui.WithContentColor
 import com.abdownloadmanager.shared.util.ui.myColors
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import com.abdownloadmanager.shared.util.ui.theme.myShapes
-import com.abdownloadmanager.shared.util.ui.theme.mySpacings
 import com.abdownloadmanager.shared.util.ui.theme.myTextSizes
 import ir.amirab.util.ifThen
 
@@ -37,35 +36,62 @@ fun ActionButton(
     enabled: Boolean = true,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
-    backgroundColor: Brush = SolidColor(Color(0xFF4A4A4A)),
-    hoverBackgroundColor: Brush = SolidColor(Color(0xFF565656)),
-    disabledBackgroundColor: Brush = SolidColor(Color(0xFF333333)),
-    borderColor: Brush = SolidColor(Color(0x66000000)),
-    focusedBorderColor: Brush = SolidColor(Color(0xFF2F7BF2)),
-    disabledBorderColor: Brush = SolidColor(Color(0x33000000)),
-    contentColor: Color = Color(0xFFE6E6E6),
+    backgroundColor: Brush = SolidColor(Color.Unspecified),
+    hoverBackgroundColor: Brush = SolidColor(Color.Unspecified),
+    disabledBackgroundColor: Brush = SolidColor(Color.Unspecified),
+    borderColor: Brush = SolidColor(Color.Unspecified),
+    focusedBorderColor: Brush = SolidColor(Color.Unspecified),
+    disabledBorderColor: Brush = SolidColor(Color.Unspecified),
+    contentColor: Color = Color.Unspecified,
     contentPadding: PaddingValues = PaddingValues(vertical = 2.dp, horizontal = 12.dp),
+    focusRingColor: Color = Color.Unspecified,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     start: (@Composable RowScope.() -> Unit)? = null,
     end: (@Composable RowScope.() -> Unit)? = null,
 ) {
     val isFocused by interactionSource.collectIsFocusedAsState()
     val isHovered by interactionSource.collectIsHoveredAsState()
-    val shape = RoundedCornerShape(4.dp)
-    val currentBg = when {
-        !enabled -> disabledBackgroundColor
-        isHovered -> hoverBackgroundColor
-        else -> backgroundColor
+    val shape = RoundedCornerShape(5.dp)
+    val mColors = myColors
+
+    fun brushOr(brush: Brush, default: Brush): Brush {
+        return if (brush is SolidColor && !brush.value.isSpecified) default else brush
     }
+
+    val normalBg = mColors.secondaryButtonGradient
+    val hoverBg = Brush.verticalGradient(
+        listOf(
+            mColors.secondaryButtonTop.brighten(),
+            mColors.secondaryButtonBottom.brighten(),
+        )
+    )
+    val currentBg = when {
+        !enabled -> brushOr(disabledBackgroundColor, brushOr(backgroundColor, normalBg))
+        isHovered -> brushOr(hoverBackgroundColor, hoverBg)
+        else -> brushOr(backgroundColor, normalBg)
+    }
+    val currentBorder = brushOr(borderColor, SolidColor(mColors.contrast / 0.4f))
+    val currentFocusedBorder = brushOr(focusedBorderColor, SolidColor(mColors.focusedBorderColor))
+    val currentDisabledBorder = brushOr(disabledBorderColor, currentBorder)
+    val currentContentColor = if (contentColor.isSpecified) contentColor else mColors.onBackground
+    val currentFocusRingColor = if (focusRingColor.isSpecified) focusRingColor else mColors.focusedBorderColor / 0.45f
     Row(
         modifier
             .heightIn(min = 24.dp)
             .height(24.dp)
             .clip(shape)
             .ifThen(isFocused) {
-                border(2.dp, Color(0x732F7BF2), shape)
+                border(2.dp, currentFocusRingColor, shape)
             }
-            .border(1.dp, if (isFocused) focusedBorderColor else (if (enabled) borderColor else disabledBorderColor), shape)
+            .border(
+                1.dp,
+                when {
+                    !enabled -> currentDisabledBorder
+                    isFocused -> currentFocusedBorder
+                    else -> currentBorder
+                },
+                shape
+            )
             .background(currentBg)
             .combinedClickable(
                 enabled = enabled,
@@ -79,8 +105,8 @@ fun ActionButton(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        WithContentColor(contentColor) {
-            WithContentAlpha(if (enabled) 1f else 0.5f) {
+        WithContentColor(currentContentColor) {
+            WithContentAlpha(if (enabled) 1f else 0.4f) {
                 start?.let {
                     it()
                 }

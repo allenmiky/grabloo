@@ -27,7 +27,7 @@ actual fun PlatformDependentProviders(content: @Composable (() -> Unit)) {
 
 @Composable
 actual fun myPlatformScrollbarStyle(): ScrollbarStyle {
-    val shape = RoundedCornerShape(4.dp)
+    val shape = RoundedCornerShape(5.dp)
     return ScrollbarStyle(
         minimalHeight = 16.dp,
         thickness = 6.dp,
@@ -65,7 +65,7 @@ private val desktopSpacings = MySpacings(
 )
 
 val desktopShapes = MyShapes(
-    defaultRounded = RoundedCornerShape(4.dp)
+    defaultRounded = RoundedCornerShape(5.dp)
 )
 
 @Composable

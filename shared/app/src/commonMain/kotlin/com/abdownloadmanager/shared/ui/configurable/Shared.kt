@@ -119,7 +119,7 @@ fun <T> RenderSpinner(
                         it.size.width.toDp()
                     }
                 }
-                .background(Color(0xFF1F1F1F))
+                .background(myColors.control)
                 .border(borderWidth, borderColor, shape)
                 .clickable(enabled = enabled) {
                     isOpen = true

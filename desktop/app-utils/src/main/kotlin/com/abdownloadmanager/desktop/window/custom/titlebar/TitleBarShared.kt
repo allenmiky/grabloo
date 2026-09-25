@@ -2,6 +2,7 @@ package com.abdownloadmanager.desktop.window.custom.titlebar
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,6 +15,7 @@ import androidx.compose.foundation.onClick
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -138,7 +140,13 @@ internal fun CommonRenderTitleBar(
     onRequestToggleMaximize: (() -> Unit)?,
 ) {
     Row(
-        modifier.height(titleBar.titleBarHeight),
+        modifier
+            .height(titleBar.titleBarHeight)
+            .background(
+                Brush.verticalGradient(
+                    listOf(myColors.toolbar, myColors.background)
+                )
+            ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val systemButtonsAtFirst = titleBar.systemButtonsPosition.isLeft

@@ -31,6 +31,6 @@ fun PrimaryMainActionButton(
         disabledBackgroundColor = disabledBackgroundColor,
         borderColor = borderColor,
         disabledBorderColor = disabledBorderColor,
-        contentColor = Color.White,
+        contentColor = myColors.onPrimary,
     )
 }

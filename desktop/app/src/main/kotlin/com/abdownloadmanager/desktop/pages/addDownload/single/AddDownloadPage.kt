@@ -11,6 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,8 +33,10 @@ import com.abdownloadmanager.shared.downloaderinui.add.CanAddResult
 import com.abdownloadmanager.shared.pages.adddownload.shared.LastUsedLocationsProp
 import com.abdownloadmanager.shared.pages.adddownload.shared.RememberFolderProp
 import com.abdownloadmanager.shared.pages.adddownload.single.BaseAddSingleDownloadComponent
+import com.abdownloadmanager.shared.ui.configurable.item.IntConfigurable
 import com.abdownloadmanager.shared.ui.widget.*
 import com.abdownloadmanager.shared.util.ClipboardUtil
+import com.abdownloadmanager.shared.util.ThreadCountLimitation
 import com.abdownloadmanager.shared.util.div
 import com.abdownloadmanager.shared.util.downloaderror.DownloadErrorReason
 import com.abdownloadmanager.shared.util.mvi.HandleEffects
@@ -56,152 +61,193 @@ fun AddDownloadPage(
     val onDuplicateStrategy by component.onDuplicateStrategy.collectAsState()
     Column(
         Modifier
-            .padding(horizontal = 32.dp)
-            .padding(top = 8.dp, bottom = 16.dp)
+            .fillMaxSize()
+            .padding(horizontal = 24.dp)
+            .padding(top = 4.dp, bottom = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        val credentials by component.credentials.collectAsState()
-        fun setLink(link: String) {
-            component.setCredentials(
-                credentials.copy(link = Some(link))
-            )
-        }
-
-        HandleEffects(component) {
-            when (it) {
-                is BaseAddSingleDownloadComponent.Effects.Common -> {
-                    when (it) {
-                        is BaseAddSingleDownloadComponent.Effects.Common.SuggestUrl -> {
-                            setLink(it.link)
-                        }
-                    }
-                }
-
-                is BaseAddSingleDownloadComponent.Effects.Platform -> {
-                    // support platform effects if any
-                }
-            }
-        }
-        UrlTextField(
-            text = credentials.link,
-            setText = {
-                setLink(it)
-            },
-            modifier = Modifier
-        )
-        Row {
-            val canAddResult by component.canAddResult.collectAsState()
-            Column(Modifier.weight(1f)) {
-                val useCategory by component.useCategory.collectAsState()
-                Spacer(Modifier.size(8.dp))
-                Row(
-                    modifier = Modifier.height(IntrinsicSize.Max),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .onClick {
-                                component.setUseCategory(!useCategory)
-                            }
-                            .padding(vertical = 4.dp)
-                    ) {
-                        CheckBox(
-                            size = 16.dp,
-                            value = useCategory,
-                            onValueChange = { component.setUseCategory(it) }
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text(myStringResource(Res.string.use_category))
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    CategorySelect(
-                        modifier = Modifier.weight(1f),
-                        enabled = useCategory,
-                        categories = component.categories.collectAsState().value,
-                        selectedCategory = component.selectedCategory.collectAsState().value,
-                        onCategorySelected = {
-                            component.setSelectedCategory(it)
-                        },
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    CategoryAddButton(
-                        enabled = useCategory,
-                        modifier = Modifier.fillMaxHeight(),
-                        onClick = {
-                            component.addNewCategory()
-                        },
-                    )
-                }
-                val isFolderChanged by component.isFolderChangedResult.collectAsState()
-                val rememberFolderAsDefault by component.rememberFolderAsDefault.collectAsState()
-                Spacer(Modifier.size(8.dp))
-                LocationTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = component.folder.collectAsState().value,
-                    setText = {
-                        component.setFolder(it)
-                    },
-                    errorText = when (canAddResult) {
-                        CanAddResult.CantWriteInThisFolder -> myStringResource(Res.string.cant_write_to_this_folder)
-                        else -> null
-                    },
-                    lastUsedLocations = LastUsedLocationsProp(
-                        locations = component.lastUsedLocations.collectAsState().value,
-                        onRequestRemove = component::removeFromLastDownloadLocation,
-                    ),
-                    rememberFolderAsDefault = RememberFolderProp(
-                        isEnabled = isFolderChanged.isChanged,
-                        value = rememberFolderAsDefault,
-                        onValueChange = component::setRememberFolderAsDefault,
-                        categoryName = isFolderChanged.categoryOrNull()?.name,
-                    ),
-                )
-                val name by component.name.collectAsState()
-                Spacer(Modifier.size(8.dp))
-                NameTextField(
-                    text = name,
-                    setText = {
-                        component.setName(it)
-                    },
-                    errorText = when (canAddResult) {
-                        is CanAddResult.DownloadAlreadyExists -> {
-                            if (onDuplicateStrategy == null) {
-                                myStringResource(Res.string.download_already_exists)
-                            } else {
-                                null
-                            }
-                        }
-
-                        CanAddResult.InvalidFileName -> myStringResource(Res.string.invalid_file_name)
-                        else -> null
-                    }.takeIf { name.isNotEmpty() }
+        Column(
+            Modifier
+                .width(IntrinsicSize.Max)
+                .widthIn(max = 460.dp)
+                .fillMaxWidth()
+        ) {
+            val credentials by component.credentials.collectAsState()
+            fun setLink(link: String) {
+                component.setCredentials(
+                    credentials.copy(link = Some(link))
                 )
             }
-            Spacer(Modifier.size(24.dp))
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .align(Alignment.Top)
-                    .width(IntrinsicSize.Max)
+
+            HandleEffects(component) {
+                when (it) {
+                    is BaseAddSingleDownloadComponent.Effects.Common -> {
+                        when (it) {
+                            is BaseAddSingleDownloadComponent.Effects.Common.SuggestUrl -> {
+                                setLink(it.link)
+                            }
+                        }
+                    }
+
+                    is BaseAddSingleDownloadComponent.Effects.Platform -> {
+                        // support platform effects if any
+                    }
+                }
+            }
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 RenderFileTypeAndSize(component)
+                Spacer(Modifier.weight(1f))
                 RenderResumeSupport(component)
+                Spacer(Modifier.width(8.dp))
                 ConfigActionsButtons(component)
             }
-        }
-        Spacer(Modifier.weight(1f))
-        MainActionButtons(component)
-        if (component.showSolutionsOnDuplicateDownloadUi) {
-            ShowSolutionsOnDuplicateDownload(component)
-        }
-        ShowAddToQueueDialog(
-            queueComponent = component.selectQueueComponent,
-        )
-        if (component.showMoreSettings) {
-            ExtraConfig(
-                onDismiss = { component.showMoreSettings = false },
-                configurables = component.configurables,
+            Spacer(Modifier.height(12.dp))
+            FormLabel(myStringResource(Res.string.links_one_per_line))
+            Spacer(Modifier.height(4.dp))
+            UrlTextField(
+                text = credentials.link,
+                setText = {
+                    setLink(it)
+                },
             )
+            Spacer(Modifier.height(4.dp))
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                ActionButton(
+                    text = myStringResource(Res.string.paste),
+                    onClick = {
+                        setLink(
+                            ClipboardUtil.read()
+                                .orEmpty()
+                        )
+                    },
+                )
+            }
+            Spacer(Modifier.height(12.dp))
+            val canAddResult by component.canAddResult.collectAsState()
+            val name by component.name.collectAsState()
+            FormLabel(myStringResource(Res.string.name))
+            Spacer(Modifier.height(4.dp))
+            NameTextField(
+                text = name,
+                setText = {
+                    component.setName(it)
+                },
+                errorText = when (canAddResult) {
+                    is CanAddResult.DownloadAlreadyExists -> {
+                        if (onDuplicateStrategy == null) {
+                            myStringResource(Res.string.download_already_exists)
+                        } else {
+                            null
+                        }
+                    }
+
+                    CanAddResult.InvalidFileName -> myStringResource(Res.string.invalid_file_name)
+                    else -> null
+                }.takeIf { name.isNotEmpty() }
+            )
+            Spacer(Modifier.height(12.dp))
+            FormLabel(myStringResource(Res.string.save_to))
+            Spacer(Modifier.height(4.dp))
+            LocationTextField(
+                modifier = Modifier.fillMaxWidth(),
+                text = component.folder.collectAsState().value,
+                setText = {
+                    component.setFolder(it)
+                },
+                errorText = when (canAddResult) {
+                    CanAddResult.CantWriteInThisFolder -> myStringResource(Res.string.cant_write_to_this_folder)
+                    else -> null
+                },
+                lastUsedLocations = LastUsedLocationsProp(
+                    locations = component.lastUsedLocations.collectAsState().value,
+                    onRequestRemove = component::removeFromLastDownloadLocation,
+                ),
+                rememberFolderAsDefault = RememberFolderProp(
+                    isEnabled = component.isFolderChangedResult.collectAsState().value.isChanged,
+                    value = component.rememberFolderAsDefault.collectAsState().value,
+                    onValueChange = component::setRememberFolderAsDefault,
+                    categoryName = component.isFolderChangedResult.collectAsState().value.categoryOrNull()?.name,
+                ),
+            )
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier = Modifier
+                    .height(IntrinsicSize.Max)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                val useCategory by component.useCategory.collectAsState()
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .onClick {
+                            component.setUseCategory(!useCategory)
+                        }
+                        .padding(vertical = 4.dp)
+                ) {
+                    CheckBox(
+                        size = 16.dp,
+                        value = useCategory,
+                        onValueChange = { component.setUseCategory(it) }
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(myStringResource(Res.string.use_category))
+                }
+                Spacer(Modifier.width(8.dp))
+                CategorySelect(
+                    modifier = Modifier.weight(1f),
+                    enabled = useCategory,
+                    categories = component.categories.collectAsState().value,
+                    selectedCategory = component.selectedCategory.collectAsState().value,
+                    onCategorySelected = {
+                        component.setSelectedCategory(it)
+                    },
+                )
+                Spacer(Modifier.width(8.dp))
+                CategoryAddButton(
+                    enabled = useCategory,
+                    modifier = Modifier.fillMaxHeight(),
+                    onClick = {
+                        component.addNewCategory()
+                    },
+                )
+            }
+            Spacer(Modifier.height(12.dp))
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                ConnectionsSelect(component)
+                Spacer(Modifier.width(16.dp))
+                QueueSelect(component)
+            }
+            Spacer(Modifier.height(8.dp))
+            val startQueue by component.selectQueueComponent.startQueue.collectAsState()
+            LabeledCheckbox(
+                value = startQueue,
+                onValueChange = component.selectQueueComponent::setStartQueue,
+                description = myStringResource(Res.string.start_now),
+            )
+            Spacer(Modifier.weight(1f))
+            MainActionButtons(component)
+            if (component.showSolutionsOnDuplicateDownloadUi) {
+                ShowSolutionsOnDuplicateDownload(component)
+            }
+            ShowAddToQueueDialog(
+                queueComponent = component.selectQueueComponent,
+            )
+            if (component.showMoreSettings) {
+                ExtraConfig(
+                    onDismiss = { component.showMoreSettings = false },
+                    configurables = component.configurables,
+                )
+            }
         }
     }
 }
@@ -442,7 +488,11 @@ fun ConfigActionsButtons(component: BaseAddSingleDownloadComponent) {
 
 @Composable
 private fun MainActionButtons(component: BaseAddSingleDownloadComponent) {
-    Row {
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         val onDuplicateStrategy by component.onDuplicateStrategy.collectAsState()
         val canAddResult by component.canAddResult.collectAsState()
         if (canAddResult is CanAddResult.DownloadAlreadyExists && onDuplicateStrategy == null) {
@@ -466,7 +516,7 @@ private fun MainActionButtons(component: BaseAddSingleDownloadComponent) {
                 modifier = Modifier,
                 enabled = canAddToDownloads,
                 onClick = {
-                    component.selectQueueComponent.openAddToQueueDialog()
+                    component.selectQueueComponent.onConfirm()
                 },
                 onLongClick = {
                     component.selectQueueComponent.fastConfirm()
@@ -492,8 +542,7 @@ private fun MainActionButtons(component: BaseAddSingleDownloadComponent) {
             }
 
         }
-        //        Spacer(Modifier.weight(1f))
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.width(8.dp))
 
         ActionButton(
             text = myStringResource(Res.string.cancel),
@@ -609,13 +658,16 @@ private fun UrlTextField(
         setText,
         myStringResource(Res.string.download_link),
         modifier = modifier.fillMaxWidth(),
-        end = {
-            MyTextFieldIcon(MyIcons.paste) {
-                setText(
-                    ClipboardUtil.read()
-                        .orEmpty()
-                )
-            }
+        singleLine = false,
+        minLines = 3,
+        start = {
+            MyIcon(
+                MyIcons.link,
+                null,
+                Modifier
+                    .padding(horizontal = 8.dp)
+                    .size(15.dp),
+            )
         },
         errorText = errorText
     )
@@ -634,5 +686,165 @@ private fun NameTextField(
         modifier = Modifier.fillMaxWidth(),
         errorText = errorText,
     )
+}
+
+@Composable
+private fun FormLabel(text: String) {
+    Text(
+        text,
+        fontSize = myTextSizes.base,
+        color = myColors.dimText,
+    )
+}
+
+@Composable
+private fun ConnectionsSelect(component: BaseAddSingleDownloadComponent) {
+    val threadCountConfigurable = remember {
+        component.configurables
+            .filterIsInstance<IntConfigurable>()
+            .firstOrNull { it.range == 0..ThreadCountLimitation.MAX_ALLOWED_THREAD_COUNT }
+    }
+    if (threadCountConfigurable == null) {
+        return
+    }
+    val value by threadCountConfigurable.stateFlow.collectAsState()
+    val options = remember {
+        (listOf(0, 1, 2, 4, 8, 16, 32) + ThreadCountLimitation.MAX_ALLOWED_THREAD_COUNT)
+            .distinct()
+            .filter { it in threadCountConfigurable.range }
+    }
+    var open by remember { mutableStateOf(false) }
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            "${myStringResource(Res.string.connections)}:",
+            fontSize = myTextSizes.base,
+            color = myColors.dimText,
+        )
+        Spacer(Modifier.width(8.dp))
+        ActionButton(
+            text = threadCountConfigurable.describe(value).rememberString(),
+            onClick = { open = true },
+        )
+    }
+    if (open) {
+        SelectPopup(
+            title = myStringResource(Res.string.connections),
+            items = options,
+            renderItem = { threadCountConfigurable.describe(it).rememberString() },
+            onDismiss = { open = false },
+            onItemSelected = {
+                threadCountConfigurable.set(it)
+                open = false
+            },
+        )
+    }
+}
+
+@Composable
+private fun QueueSelect(component: BaseAddSingleDownloadComponent) {
+    val queues by component.queues.collectAsState()
+    val selectedQueueId by component.selectQueueComponent.selectedQueue.collectAsState()
+    var open by remember { mutableStateOf(false) }
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            "${myStringResource(Res.string.queue_label)}:",
+            fontSize = myTextSizes.base,
+            color = myColors.dimText,
+        )
+        Spacer(Modifier.width(8.dp))
+        ActionButton(
+            text = queues.firstOrNull { it.id == selectedQueueId }?.getQueueModel()?.name
+                ?: myStringResource(Res.string.default),
+            onClick = { open = true },
+        )
+    }
+    if (open) {
+        SelectPopup(
+            title = myStringResource(Res.string.queue_label),
+            items = queues,
+            renderItem = { it.getQueueModel().name },
+            onDismiss = { open = false },
+            onItemSelected = {
+                component.selectQueueComponent.setSelectedQueue(it.id)
+                open = false
+            },
+        )
+    }
+}
+
+@Composable
+private fun <T> SelectPopup(
+    title: String,
+    items: List<T>,
+    onDismiss: () -> Unit,
+    onItemSelected: (T) -> Unit,
+    renderItem: @Composable (T) -> String,
+) {
+    val state = rememberDialogState(
+        initialBoundsProvider = WindowBoundsProvider(
+            sizeProvider = WindowSizeProvider.Unconstrained
+        )
+    )
+    BaseOptionDialog(
+        onCloseRequest = onDismiss,
+        state = state,
+        resizeable = false,
+    ) {
+        LaunchedEffect(window) {
+            window.moveSafe(
+                MouseInfo.getPointerInfo().location.run {
+                    DpOffset(
+                        x = x.dp,
+                        y = y.dp
+                    )
+                }
+            )
+        }
+
+        val shape = myShapes.defaultRounded
+        Column(
+            Modifier
+                .clip(shape)
+                .border(2.dp, myColors.onBackground / 10, shape)
+                .background(
+                    Brush.linearGradient(
+                        listOf(
+                            myColors.surface,
+                            myColors.background,
+                        )
+                    )
+                )
+        ) {
+            WithContentColor(myColors.onBackground) {
+                Column(
+                    Modifier
+                        .widthIn(min = 140.dp, max = 280.dp)
+                        .width(IntrinsicSize.Max)
+                ) {
+                    Text(
+                        title,
+                        Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp),
+                        fontSize = myTextSizes.sm,
+                        color = myColors.dimText,
+                    )
+                    items.forEach { item ->
+                        Text(
+                            renderItem(item),
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onItemSelected(item)
+                                }
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 

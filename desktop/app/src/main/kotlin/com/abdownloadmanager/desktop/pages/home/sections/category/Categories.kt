@@ -172,7 +172,7 @@ fun SidebarItem(
         modifier
             .fillMaxWidth()
             .padding(horizontal = 6.dp, vertical = 1.dp)
-            .clip(RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(5.dp))
             .background(
                 if (isSelected) myColors.selectedRow
                 else if (isHovered) myColors.onBackground / 0.05f
@@ -232,7 +232,7 @@ private fun ReorderableListItemScope.CategorySidebarItem(
                 onDragDone = { isDraggingOnMe = false },
                 onItemsDropped = onItemsDropped,
             )
-            .clip(RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(5.dp))
             .background(
                 if (isSelected) myColors.selectedRow
                 else if (isHovered) myColors.onBackground / 0.05f

@@ -22,11 +22,7 @@ import androidx.compose.ui.draganddrop.awtTransferable
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
@@ -72,7 +68,6 @@ import com.abdownloadmanager.shared.util.ui.WithContentColor
 import com.abdownloadmanager.shared.util.ui.WithTitleBarDirection
 import com.abdownloadmanager.shared.util.ui.icon.MyIcons
 import com.abdownloadmanager.shared.util.ui.myColors
-import com.abdownloadmanager.shared.util.ui.theme.myShapes
 import com.abdownloadmanager.shared.util.ui.theme.myTextSizes
 import com.abdownloadmanager.shared.util.ui.widget.MyIcon
 import ir.amirab.downloader.downloaditem.DownloadJobStatus
@@ -416,27 +411,20 @@ private fun ShowDeletePrompts(
     onConfirm: () -> Unit,
     onCancel: () -> Unit,
 ) {
-    val shape = myShapes.defaultRounded
+    val shape = RoundedCornerShape(5.dp)
     Dialog(onDismissRequest = onCancel) {
         Column(
             Modifier
                 .clip(shape)
-                .border(2.dp, myColors.onBackground / 10, shape)
-                .background(
-                    Brush.linearGradient(
-                        listOf(
-                            myColors.surface,
-                            myColors.background,
-                        )
-                    )
-                )
-                .padding(16.dp)
+                .border(1.dp, myColors.divider, shape)
+                .background(myColors.sidebar)
+                .padding(14.dp)
                 .width(IntrinsicSize.Max)
-                .widthIn(max = 260.dp)
+                .widthIn(max = 460.dp)
         ) {
             Text(
                 myStringResource(Res.string.confirm_delete_download_items_title),
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 fontSize = myTextSizes.xl,
                 color = myColors.onBackground,
             )
@@ -471,40 +459,17 @@ private fun ShowDeletePrompts(
                     }
                 }.rememberString(),
                 fontSize = myTextSizes.base,
-                color = myColors.onBackground,
+                color = myColors.dimText,
             )
-            if (deletePromptState.hasFinishedDownloads) {
-                Spacer(Modifier.height(12.dp))
-                val alsoDeleteFileInteractionSource = remember { MutableInteractionSource() }
-                Row(
-                    Modifier
-                        .clickable(
-                            interactionSource = alsoDeleteFileInteractionSource,
-                            indication = null
-                        ) {
-                            deletePromptState.alsoDeleteFile = !deletePromptState.alsoDeleteFile
-                        },
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    CheckBox(
-                        value = deletePromptState.alsoDeleteFile,
-                        onValueChange = {
-                            deletePromptState.alsoDeleteFile = it
-                        },
-                        modifier = Modifier
-                            // the Row itself is clickable (focusable) so we don't need to focus this checkbox
-                            // is there a better way?
-                            .focusProperties { canFocus = false },
-                        interactionSource = alsoDeleteFileInteractionSource,
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        myStringResource(Res.string.also_delete_file_from_disk),
-                        fontSize = myTextSizes.base,
-                        color = myColors.onBackground,
-                    )
-                }
-            }
+            Spacer(Modifier.height(12.dp))
+                LabeledCheckbox(
+                    value = deletePromptState.alsoDeleteFile,
+                    enabled = deletePromptState.hasFinishedDownloads,
+                    onValueChange = {
+                        deletePromptState.alsoDeleteFile = it
+                    },
+                    description = myStringResource(Res.string.also_delete_file_from_disk),
+                )
             Spacer(Modifier.height(12.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -515,15 +480,13 @@ private fun ShowDeletePrompts(
                     confirmFocusRequester.requestFocus()
                 }
                 Spacer(Modifier.weight(1f))
-                ActionButton(
+                ActionButton(text = myStringResource(Res.string.cancel), onClick = onCancel)
+                Spacer(Modifier.width(8.dp))
+                DangerActionButton(
                     text = myStringResource(Res.string.delete),
                     onClick = onConfirm,
-                    focusedBorderColor = SolidColor(myColors.error),
-                    contentColor = myColors.error,
                     modifier = Modifier.focusRequester(confirmFocusRequester)
                 )
-                Spacer(Modifier.width(8.dp))
-                ActionButton(text = myStringResource(Res.string.cancel), onClick = onCancel)
             }
         }
     }
@@ -535,13 +498,13 @@ private fun ShowConfirmPrompt(
     onConfirm: () -> Unit,
     onCancel: () -> Unit,
 ) {
-    val shape = RoundedCornerShape(8.dp)
+    val shape = RoundedCornerShape(5.dp)
     Dialog(onDismissRequest = onCancel) {
         Column(
             Modifier
                 .clip(shape)
-                .border(1.dp, Color(0xFF404040), shape)
-                .background(Color(0xFF262626))
+                .border(1.dp, myColors.divider, shape)
+                .background(myColors.sidebar)
                 .padding(14.dp)
                 .width(IntrinsicSize.Max)
                 .widthIn(max = 360.dp)
@@ -550,13 +513,13 @@ private fun ShowConfirmPrompt(
                 text = promptState.title.rememberString(),
                 fontWeight = FontWeight.SemiBold,
                 fontSize = myTextSizes.xl,
-                color = Color(0xFFE6E6E6),
+                color = myColors.onBackground,
             )
             Spacer(Modifier.height(8.dp))
             Text(
                 text = promptState.description.rememberString(),
                 fontSize = myTextSizes.base,
-                color = Color(0xFF93939A),
+                color = myColors.dimText,
             )
             Spacer(Modifier.height(14.dp))
             Row(
@@ -571,15 +534,11 @@ private fun ShowConfirmPrompt(
                 ActionButton(
                     text = myStringResource(Res.string.cancel),
                     onClick = onCancel,
-                    backgroundColor = SolidColor(Color(0xFF4A4A4A)),
-                    contentColor = Color(0xFFE6E6E6),
                 )
                 Spacer(Modifier.width(8.dp))
-                ActionButton(
+                PrimaryMainActionButton(
                     text = myStringResource(Res.string.ok),
                     onClick = onConfirm,
-                    backgroundColor = SolidColor(Color(0xFF2F7BF2)),
-                    contentColor = Color.White,
                     modifier = Modifier.focusRequester(confirmFocusRequester)
                 )
             }
@@ -593,13 +552,13 @@ private fun ShowDeleteCategoryPrompt(
     onConfirm: () -> Unit,
     onCancel: () -> Unit,
 ) {
-    val shape = RoundedCornerShape(8.dp)
+    val shape = RoundedCornerShape(5.dp)
     Dialog(onDismissRequest = onCancel) {
         Column(
             Modifier
                 .clip(shape)
-                .border(1.dp, Color(0xFF404040), shape)
-                .background(Color(0xFF262626))
+                .border(1.dp, myColors.divider, shape)
+                .background(myColors.sidebar)
                 .padding(14.dp)
                 .width(IntrinsicSize.Max)
                 .widthIn(max = 360.dp)
@@ -613,7 +572,7 @@ private fun ShowDeleteCategoryPrompt(
                 ),
                 fontWeight = FontWeight.SemiBold,
                 fontSize = myTextSizes.xl,
-                color = Color(0xFFE6E6E6),
+                color = myColors.onBackground,
             )
             Spacer(Modifier.height(8.dp))
             Text(
@@ -624,13 +583,13 @@ private fun ShowDeleteCategoryPrompt(
                     )
                 ),
                 fontSize = myTextSizes.base,
-                color = Color(0xFF93939A),
+                color = myColors.dimText,
             )
             Spacer(Modifier.height(6.dp))
             Text(
                 myStringResource(Res.string.your_download_will_not_be_deleted),
                 fontSize = myTextSizes.base,
-                color = Color(0xFF93939A),
+                color = myColors.dimText,
             )
             Spacer(Modifier.height(14.dp))
             Row(
@@ -645,16 +604,11 @@ private fun ShowDeleteCategoryPrompt(
                 ActionButton(
                     text = myStringResource(Res.string.cancel),
                     onClick = onCancel,
-                    backgroundColor = SolidColor(Color(0xFF4A4A4A)),
-                    contentColor = Color(0xFFE6E6E6),
                 )
                 Spacer(Modifier.width(8.dp))
-                ActionButton(
+                DangerActionButton(
                     text = myStringResource(Res.string.delete),
                     onClick = onConfirm,
-                    backgroundColor = SolidColor(Color(0xFFE5484D)),
-                    contentColor = Color.White,
-                    focusedBorderColor = SolidColor(Color(0xFFE5484D)),
                     modifier = Modifier.focusRequester(confirmFocusRequester),
                 )
             }
@@ -777,8 +731,8 @@ private fun PrimaryToolbarButton(
         Row(
             Modifier
                 .height(24.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(if (isHovered) Color(0xFF4A8DF6) else Color(0xFF2F7BF2))
+                .clip(RoundedCornerShape(5.dp))
+                .background(if (isHovered) myColors.primaryVariant else myColors.primary)
                 .clickable(
                     interactionSource = interactionSource,
                     indication = null,
@@ -788,13 +742,13 @@ private fun PrimaryToolbarButton(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(5.dp),
         ) {
-            WithContentColor(Color.White) {
+            WithContentColor(myColors.onPrimary) {
                 MyIcon(icon, null, Modifier.size(13.dp))
                 Text(
                     text = title,
                     maxLines = 1,
                     fontSize = 11.sp,
-                    color = Color.White,
+                    color = myColors.onPrimary,
                     fontWeight = FontWeight.Medium,
                 )
             }
@@ -814,8 +768,14 @@ private fun ToolbarAction(action: AnAction, customTitle: String? = null) {
         Row(
             Modifier
                 .height(24.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(if (isHovered && enabled) Color(0x28FFFFFF) else Color(0x33000000))
+                .clip(RoundedCornerShape(5.dp))
+                .background(
+                    if (isHovered && enabled) {
+                        myColors.onBackground / 0.094f
+                    } else {
+                        myColors.contrast / 0.2f
+                    }
+                )
                 .clickable(
                     enabled = enabled,
                     interactionSource = interactionSource,
@@ -832,7 +792,7 @@ private fun ToolbarAction(action: AnAction, customTitle: String? = null) {
                     text = displayTitle,
                     maxLines = 1,
                     fontSize = 11.sp,
-                    color = Color(0xFFE6E6E6),
+                    color = myColors.onBackground,
                 )
             }
         }
@@ -848,7 +808,7 @@ private fun DownloadDetailsPanel(component: HomeComponent) {
         Box(
             Modifier
                 .fillMaxWidth()
-                .background(myColors.panel)
+                .background(myColors.sidebar)
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             contentAlignment = Alignment.CenterStart
         ) {
@@ -863,7 +823,7 @@ private fun DownloadDetailsPanel(component: HomeComponent) {
     Row(
         Modifier
             .fillMaxWidth()
-            .background(myColors.panel)
+            .background(myColors.sidebar)
             .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp),
@@ -1056,7 +1016,7 @@ private fun Footer(component: HomeComponent) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(myColors.background)
+            .background(myColors.toolbar)
             .padding(vertical = 4.dp, horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

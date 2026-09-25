@@ -47,12 +47,12 @@ fun MyTextField(
     onTextChange: (String) -> Unit,
     placeholder: String,
     modifier: Modifier,
-    background: Color = Color(0xFF1F1F1F),
+    background: Color = Color.Unspecified,
     contentColor: Color = myColors.getContentColorFor(background).takeIf { it.isSpecified }
         ?: LocalContentColor.current,
-    focusedBorderColor: Color = Color(0xFF2F7BF2),
-    borderColor: Color = Color(0xFF404040),
-    shape: Shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp),
+    focusedBorderColor: Color = Color.Unspecified,
+    borderColor: Color = Color.Unspecified,
+    shape: Shape = androidx.compose.foundation.shape.RoundedCornerShape(5.dp),
     textPadding: PaddingValues = PaddingValues(horizontal = 7.dp, vertical = 3.dp),
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     fontSize: TextUnit = TextUnit.Unspecified,
@@ -68,6 +68,11 @@ fun MyTextField(
     val focusRequester = remember { FocusRequester() }
     val fm = LocalFocusManager.current
     val isFocused by interactionSource.collectIsFocusedAsState()
+
+    val resolvedBackground = if (background.isSpecified) background else myColors.control
+    val resolvedBorderColor = if (borderColor.isSpecified) borderColor else myColors.divider
+    val resolvedFocusedBorderColor = if (focusedBorderColor.isSpecified) focusedBorderColor else myColors.focusedBorderColor
+    val focusRingColor = myColors.focusedBorderColor / 0.45f
 
     val textSize = fontSize.takeOrElse { LocalTextStyle.current.fontSize }
     Row(
@@ -97,20 +102,20 @@ fun MyTextField(
             .ifThen(isFocused) {
                 border(
                     2.dp,
-                    Color(0x732F7BF2),
+                    focusRingColor,
                     shape
                 )
             }
             .border(
                 1.dp,
                 animateColorAsState(
-                    if (isFocused) focusedBorderColor
-                    else borderColor
+                    if (isFocused) resolvedFocusedBorderColor
+                    else resolvedBorderColor
                 ).value,
                 shape
             )
-            .ifThen(background.isSpecified) {
-                background(background)
+            .ifThen(resolvedBackground.isSpecified) {
+                background(resolvedBackground)
             },
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -132,7 +137,7 @@ fun MyTextField(
                 .focusRequester(focusRequester),
             textStyle = LocalTextStyle.current.merge(
                 TextStyle(
-                    color = LocalContentColor.current.ifThen(!enabled) {
+                    color = contentColor.ifThen(!enabled) {
                         copy(0.5f)
                     },
                     fontSize = fontSize
@@ -149,7 +154,7 @@ fun MyTextField(
                         Text(
                             text = placeholder,
                             maxLines = 1,
-                            color = Color(0xFF93939A),
+                            color = myColors.dimText,
                             fontSize = textSize
                         )
                     }
