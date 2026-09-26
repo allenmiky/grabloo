@@ -37,9 +37,11 @@ import ir.amirab.downloader.db.*
 import ir.amirab.downloader.monitor.DownloadMonitor
 import ir.amirab.downloader.utils.IDiskStat
 import com.abdownloadmanager.resources.ABDMLanguageResources
+import com.abdownloadmanager.shared.binarymanager.BinaryDownloadService
 import com.abdownloadmanager.shared.downloaderinui.DownloaderInUiRegistry
 import com.abdownloadmanager.shared.downloaderinui.hls.HLSDownloaderInUi
 import com.abdownloadmanager.shared.downloaderinui.http.HttpDownloaderInUi
+import com.abdownloadmanager.shared.downloaderinui.yt_dlp.YtDlpDownloaderInUi
 import com.abdownloadmanager.shared.repository.BaseAppRepository
 import com.abdownloadmanager.shared.storage.appsettings.BaseAppSettingsStorage
 import com.abdownloadmanager.shared.storage.DnsSettings
@@ -119,6 +121,7 @@ import ir.amirab.downloader.downloaditem.hls.HLSDownloader
 import ir.amirab.downloader.downloaditem.http.HttpDownloadCredentials
 import ir.amirab.downloader.downloaditem.http.HttpDownloadItem
 import ir.amirab.downloader.downloaditem.http.HttpDownloader
+import ir.amirab.downloader.downloaditem.yt_dlp.YtDlpDownloader
 import ir.amirab.downloader.monitor.DownloadItemStateFactory
 import ir.amirab.downloader.monitor.IDownloadMonitor
 import ir.amirab.downloader.queue.ManualDownloadQueue
@@ -216,6 +219,12 @@ val downloaderModule = module {
         )
     }
     single {
+        BinaryDownloadService(
+            definedPaths = get(),
+            scope = get(),
+        )
+    }
+    single {
         HLSDownloader(inject())
     }
     single {
@@ -228,15 +237,23 @@ val downloaderModule = module {
         HttpDownloaderInUi(get(), get())
     }
     single {
+        YtDlpDownloader()
+    }
+    single {
+        YtDlpDownloaderInUi(get(), get(), get())
+    }
+    single {
         DownloaderInUiRegistry().apply {
             add(get<HttpDownloaderInUi>())
             add(get<HLSDownloaderInUi>())
+            add(get<YtDlpDownloaderInUi>())
         }
     }.bind<DownloadItemStateFactory<IDownloadItem, DownloadJob>>()
     single {
         DownloaderRegistry().apply {
             add(get<HttpDownloader>())
             add(get<HLSDownloader>())
+            add(get<YtDlpDownloader>())
         }
     }
     single {

@@ -9,11 +9,13 @@ import com.abdownloadmanager.shared.downloaderinui.DownloaderInUiRegistry
 import com.abdownloadmanager.shared.pages.adddownload.AddDownloadCredentialsInUiProps
 import com.abdownloadmanager.shared.pages.adddownload.ImportOptions
 import com.abdownloadmanager.shared.pages.adddownload.SilentImportOptions
+import com.abdownloadmanager.shared.downloaderinui.yt_dlp.add.YtDlpUrlPatterns
 import com.abdownloadmanager.shared.util.DownloadSystem
 import ir.amirab.downloader.NewDownloadItemProps
 import ir.amirab.downloader.downloaditem.EmptyContext
 import ir.amirab.downloader.downloaditem.hls.HLSDownloadCredentials
 import ir.amirab.downloader.downloaditem.http.HttpDownloadCredentials
+import ir.amirab.downloader.downloaditem.yt_dlp.YtDlpDownloadCredentials
 import ir.amirab.downloader.queue.QueueManager
 import ir.amirab.downloader.utils.OnDuplicateStrategy
 import org.koin.core.component.KoinComponent
@@ -93,11 +95,21 @@ class IntegrationHandlerImp : IntegrationHandler, KoinComponent {
         private fun convertToDownloadSystemCredentials(it: IDownloadCredentialsFromIntegration): AddDownloadCredentialsInUiProps {
             val credentials = when (it) {
                 is HttpDownloadCredentialsFromIntegration -> {
-                    HttpDownloadCredentials(
-                        link = it.link,
-                        headers = it.headers,
-                        downloadPage = it.downloadPage,
-                    )
+                    // Detect yt-dlp supported URLs (YouTube, Vimeo, Twitch, etc.)
+                    if (YtDlpUrlPatterns.isYtDlpSupported(it.link)) {
+                        YtDlpDownloadCredentials(
+                            link = it.link,
+                            headers = it.headers,
+                            downloadPage = it.downloadPage,
+                            title = it.suggestedName,
+                        )
+                    } else {
+                        HttpDownloadCredentials(
+                            link = it.link,
+                            headers = it.headers,
+                            downloadPage = it.downloadPage,
+                        )
+                    }
                 }
 
                 is HLSDownloadCredentialsFromIntegration -> {
@@ -105,6 +117,16 @@ class IntegrationHandlerImp : IntegrationHandler, KoinComponent {
                         link = it.link,
                         headers = it.headers,
                         downloadPage = it.downloadPage,
+                    )
+                }
+
+                is YtDlpDownloadCredentialsFromIntegration -> {
+                    YtDlpDownloadCredentials(
+                        link = it.link,
+                        headers = it.headers,
+                        downloadPage = it.downloadPage,
+                        title = it.title,
+                        thumbnailUrl = it.thumbnailUrl,
                     )
                 }
             }

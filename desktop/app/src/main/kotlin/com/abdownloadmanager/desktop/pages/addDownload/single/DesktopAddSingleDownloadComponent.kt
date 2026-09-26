@@ -1,6 +1,10 @@
 package com.abdownloadmanager.desktop.pages.addDownload.single
 
+import com.abdownloadmanager.shared.binarymanager.BinaryDownloadService
+import com.abdownloadmanager.shared.binarymanager.openBinaryDownloadDialogAndAwait
 import com.abdownloadmanager.shared.downloaderinui.DownloaderInUi
+import com.abdownloadmanager.shared.downloaderinui.yt_dlp.YtDlpDownloaderInUi
+import com.abdownloadmanager.shared.pagemanager.BinaryDownloadDialogManager
 import com.abdownloadmanager.shared.pagemanager.CategoryDialogManager
 import com.abdownloadmanager.shared.pagemanager.DownloadErrorDialogManager
 import com.abdownloadmanager.shared.pages.adddownload.AddDownloadCredentialsInUiProps
@@ -22,6 +26,7 @@ import ir.amirab.downloader.downloaditem.DownloadJobExtraConfig
 import ir.amirab.downloader.downloaditem.IDownloadCredentials
 import ir.amirab.downloader.queue.QueueManager
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
 
 class DesktopAddSingleDownloadComponent(
     ctx: ComponentContext,
@@ -47,31 +52,71 @@ class DesktopAddSingleDownloadComponent(
     initialCredentials: AddDownloadCredentialsInUiProps,
     downloadErrorDialogManager: DownloadErrorDialogManager,
     private val categoryDialogManager: CategoryDialogManager,
+    private val binaryDownloadDialogManager: BinaryDownloadDialogManager,
+    private val binaryDownloadService: BinaryDownloadService,
 ) : BaseAddSingleDownloadComponent(
     ctx = ctx,
     onRequestClose = onRequestClose,
-    onRequestDownload = onRequestDownload,
-    onRequestAddToQueue = onRequestAddToQueue,
+    onRequestDownload = { item, categoryId ->
+        appScope.async {
+            if (awaitRequiredBinaries(
+                    isYtDlp = downloaderInUi is YtDlpDownloaderInUi,
+                    binaryDownloadService = binaryDownloadService,
+                    binaryDownloadDialogManager = binaryDownloadDialogManager,
+                )
+            ) {
+                onRequestDownload(item, categoryId)
+            }
+            -1L
+        }
+    },
+    onRequestAddToQueue = { item, queueId, categoryId ->
+        appScope.async {
+            if (awaitRequiredBinaries(
+                    isYtDlp = downloaderInUi is YtDlpDownloaderInUi,
+                    binaryDownloadService = binaryDownloadService,
+                    binaryDownloadDialogManager = binaryDownloadDialogManager,
+                )
+            ) {
+                onRequestAddToQueue(item, queueId, categoryId).await()
+            } else {
+                -1L
+            }
+        }
+    },
     openExistingDownload = openExistingDownload,
     updateExistingDownloadCredentials = updateExistingDownloadCredentials,
     downloadItemOpener = downloadItemOpener,
     lastSavedLocationsStorage = lastSavedLocationsStorage,
     selectQueueStorage = selectQueueStorage,
-    importOptions = importOptions,
-    id = id,
-    downloaderInUi = downloaderInUi,
-    initialCredentials = initialCredentials,
     queueManager = queueManager,
     categoryManager = categoryManager,
     downloadSystem = downloadSystem,
     appSettings = appSettings,
     iconProvider = iconProvider,
-    downloadErrorDialogManager = downloadErrorDialogManager,
-    appScope = appScope,
     appRepository = appRepository,
+    appScope = appScope,
     perHostSettingsManager = perHostSettingsManager,
+    importOptions = importOptions,
+    id = id,
+    downloaderInUi = downloaderInUi,
+    initialCredentials = initialCredentials,
+    downloadErrorDialogManager = downloadErrorDialogManager,
 ) {
     override fun getCategoryPageManager(): CategoryDialogManager {
         return categoryDialogManager
     }
+}
+
+/**
+ * yt-dlp needs its binaries, so a download is only started once they are ready.
+ */
+private suspend fun awaitRequiredBinaries(
+    isYtDlp: Boolean,
+    binaryDownloadService: BinaryDownloadService,
+    binaryDownloadDialogManager: BinaryDownloadDialogManager,
+): Boolean {
+    if (!isYtDlp) return true
+    if (binaryDownloadService.areBinariesAvailable()) return true
+    return binaryDownloadDialogManager.openBinaryDownloadDialogAndAwait()
 }

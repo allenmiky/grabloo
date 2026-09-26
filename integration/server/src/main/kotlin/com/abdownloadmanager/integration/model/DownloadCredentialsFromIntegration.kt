@@ -31,6 +31,17 @@ data class HLSDownloadCredentialsFromIntegration(
     override val suggestedName: String? = null,
 ) : IDownloadCredentialsFromIntegration
 
+@SerialName("yt-dlp")
+@Serializable
+data class YtDlpDownloadCredentialsFromIntegration(
+    override val link: String,
+    val headers: Map<String, String>? = null,
+    override val downloadPage: String? = null,
+    override val suggestedName: String? = null,
+    val title: String? = null,
+    val thumbnailUrl: String? = null,
+) : IDownloadCredentialsFromIntegration
+
 @Serializable
 data class AddDownloadOptionsFromIntegration(
     val silentAdd: Boolean = false,

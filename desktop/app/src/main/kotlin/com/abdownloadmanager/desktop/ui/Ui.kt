@@ -13,6 +13,7 @@ import com.abdownloadmanager.desktop.pages.about.ShowAboutDialog
 import com.abdownloadmanager.desktop.pages.addDownload.ShowAddDownloadDialogs
 import com.abdownloadmanager.desktop.pages.batchdownload.BatchDownloadWindow
 import com.abdownloadmanager.desktop.pages.category.ShowCategoryDialogs
+import com.abdownloadmanager.desktop.pages.binarydownload.BinaryDownloadWindow
 import com.abdownloadmanager.desktop.pages.checksum.FileChecksumWindow
 import com.abdownloadmanager.desktop.pages.confirmexit.ConfirmExit
 import com.abdownloadmanager.desktop.pages.credits.translators.ShowTranslators
@@ -128,6 +129,7 @@ object Ui : KoinComponent {
                 PowerActionAlert(appComponent)
                 PerHostSettingsWindow(appComponent)
                 DownloadErrorDialog(appComponent)
+                BinaryDownloadWindow(appComponent)
             }
         }
     }

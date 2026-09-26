@@ -3,6 +3,7 @@ package com.abdownloadmanager.desktop
 import com.abdownloadmanager.UpdateManager
 import com.abdownloadmanager.desktop.pages.addDownload.multiple.DesktopAddMultiDownloadComponent
 import com.abdownloadmanager.desktop.pages.addDownload.single.DesktopAddSingleDownloadComponent
+import com.abdownloadmanager.desktop.pages.binarydownload.DesktopBinaryDownloadComponent
 import com.abdownloadmanager.desktop.pages.batchdownload.DesktopBatchDownloadComponent
 import com.abdownloadmanager.desktop.pages.category.DesktopCategoryDialogManager
 import com.abdownloadmanager.desktop.pages.checksum.DesktopFileChecksumComponent
@@ -26,6 +27,7 @@ import com.abdownloadmanager.integration.IntegrationResult
 import com.abdownloadmanager.resources.Res
 import com.abdownloadmanager.shared.downloaderinui.DownloaderInUiRegistry
 import com.abdownloadmanager.shared.downloaderror.DownloadErrorComponent
+import com.abdownloadmanager.shared.binarymanager.BinaryDownloadService
 import com.abdownloadmanager.shared.pagemanager.*
 import com.abdownloadmanager.shared.pages.adddownload.AddDownloadComponent
 import com.abdownloadmanager.shared.pages.adddownload.AddDownloadConfig
@@ -106,6 +108,7 @@ class AppComponent(
     AboutPageManager,
     BatchDownloadPageManager,
     ExitApplicationRequestManager,
+    BinaryDownloadDialogManager,
     ContainsEffects<AppEffects> by supportEffects(),
     KoinComponent {
     val applicationScope: CoroutineScope by inject()
@@ -116,6 +119,7 @@ class AppComponent(
     private val defaultCategories: DefaultCategories by inject()
     private val integration: Integration by inject()
     private val perHostSettingsManager: PerHostSettingsManager by inject()
+    private val binaryDownloadService: BinaryDownloadService by inject()
     val iconFromUriResolver: IIconResolver by inject()
     val updaterManager: UpdateManager by inject()
     val extraDownloadSettingStorage: ExtraDownloadSettingsStorage<DesktopExtraDownloadItemSettings> by inject()
@@ -375,6 +379,8 @@ class AppComponent(
                         categoryManager = categoryManager,
                         queueManager = queueManager,
                         downloadErrorDialogManager = this,
+                        binaryDownloadDialogManager = this,
+                        binaryDownloadService = binaryDownloadService,
                     )
                 }
 
@@ -1195,6 +1201,38 @@ class AppComponent(
     override fun dismissPowerAction() {
         scope.launch {
             powerActionNavigation.dismiss()
+        }
+    }
+
+    private val binaryDownloadDialogNavigation = SlotNavigation<DesktopBinaryDownloadComponent.Config>()
+    val binaryDownloadDialogSlot = childSlot(
+        source = binaryDownloadDialogNavigation,
+        serializer = null,
+        key = "binaryDownloadDialog",
+        childFactory = { config: DesktopBinaryDownloadComponent.Config, componentContext: ComponentContext ->
+            DesktopBinaryDownloadComponent(
+                ctx = componentContext,
+                binaryDownloadService = binaryDownloadService,
+                onComplete = { binaryDownloadOnComplete?.invoke(it) },
+                closeComponent = ::closeBinaryDownloadDialog,
+            )
+        }
+    ).subscribeAsStateFlow()
+
+    private var binaryDownloadOnComplete: ((Boolean) -> Unit)? = null
+
+    override fun openBinaryDownloadDialog(onComplete: (Boolean) -> Unit) {
+        scope.launch {
+            binaryDownloadOnComplete = onComplete
+            binaryDownloadDialogNavigation.activate(DesktopBinaryDownloadComponent.Config())
+        }
+    }
+
+    override fun closeBinaryDownloadDialog() {
+        scope.launch {
+            binaryDownloadOnComplete?.invoke(false)
+            binaryDownloadOnComplete = null
+            binaryDownloadDialogNavigation.dismiss()
         }
     }
 

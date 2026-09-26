@@ -65,6 +65,42 @@ data class RangeBasedProcessingDownloadItemState(
     companion object
 }
 
+/**
+ * for downloaders that report their own progress instead of having a part list, for example an external process.
+ */
+@Immutable
+data class ExplicitProgressProcessingDownloadItemState(
+    override val id: Long,
+    override val folder: String,
+    override val name: String,
+    override val downloadLink: String,
+    override val contentLength: Long,
+    override val saveLocation: String,
+    override val dateAdded: Long,
+    override val startTime: Long,
+    override val completeTime: Long,
+    override val status: DownloadJobStatus,
+    override val speed: Long,
+    override val parts: List<UiPart>,
+    override val supportResume: Boolean?,
+    override val isWaiting: Boolean,
+    override val progress: Long,
+    override val percent: Int?,
+) : ProcessingDownloadItemState {
+    override val hasProgress get() = progress > 0
+    override val gotAnyProgress = progress > 0L
+
+    //remaining time in seconds
+    override val remainingTime: Long? = kotlin.run {
+        when {
+            contentLength <= 0 || speed <= 0 -> null
+            else -> (contentLength - progress) / speed
+        }
+    }
+
+    companion object
+}
+
 @Immutable
 data class DurationBasedProcessingDownloadItemState(
     override val id: Long,
