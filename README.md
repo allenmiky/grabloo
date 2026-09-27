@@ -1,175 +1,128 @@
 <div align="center">
-  <a href="https://github.com/allenmiky/grabloo" target="_blank">
-    <img width="180" src="assets/logo/grabbo_logo.png" alt="Grabbo Logo">
-  </a>
+
+  <!-- ==================== LOGO PLACEHOLDER ==================== -->
+  <!-- Replace assets/logo/grabbo_logo.png with your final logo image -->
+  <img width="180" src="assets/logo/grabbo_logo.png" alt="Grabbo Logo" onerror="this.style.display='none'">
+  
+  <h1>Grabbo</h1>
+  <p><strong>A modern, powerful download manager with seamless 4K video grabbing & automated browser integration.</strong></p>
+
+  <p>
+    <img alt="Platform - Multiplatform" src="https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS%20%7C%20Android-blue?style=flat-square">
+    <img alt="License - Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-green?style=flat-square">
+    <img alt="UI - Jetpack Compose" src="https://img.shields.io/badge/UI-Jetpack%20Compose-purple?style=flat-square">
+  </p>
+
 </div>
-<h1 align="center">Grabbo</h1>
-<p align="center">
-    <a href="https://github.com/amir1376/ab-download-manager/releases/latest"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/amir1376/ab-download-manager?color=greenlight&label=latest%20release"></a>
-    <a href="https://github.com/allenmiky/grabloo"><img alt="Grabbo Website" src="https://img.shields.io/badge/project-website-purple?&labelColor=gray"></a>
-</p>
 
-<a href="https://github.com/allenmiky/grabloo" target="_blank">
-    <img alt="Grabbo Banner" src="assets/banners/app_banner.png"/>
-</a>
+---
 
-## Introduction
+<!-- ==================== HERO BANNER PLACEHOLDER ==================== -->
+<!-- Place your full app banner image here -->
+<div align="center">
+  <img alt="Grabbo App Banner" src="assets/banners/app_banner.png" width="100%" onerror="this.style.display='none'"/>
+  <!-- <em>[Hero Banner Image Placeholder - Recommended resolution: 1280x640]</em> -->
+</div>
 
-[Grabbo](https://github.com/allenmiky/grabloo) is a desktop app that helps you manage and organize your downloads more efficiently than ever before.
+---
 
-Originally developed by amir1376.
+## ⚡ What is Grabbo?
 
-## Features
+**Grabbo** is a next-generation download manager built with Kotlin Multiplatform and Jetpack Compose. It blends the raw multithreaded download speed of classic download managers with an embedded high-resolution media grabbing engine (powered by `yt-dlp`), letting you grab 1080p, 2K, 4K, 60fps streams and regular files with zero hassle.
 
-- ⚡️ Faster Download Speed
-- ⏰ Queues and Schedulers
-- 🌐 Browser Extensions
-- 💻 Multiplatform (Android / Windows / Linux / Mac)
-- 🌙 Multiple Themes (Dark/Light/Black and more) with modern UI
-- ❤️ Free and Open Source
+---
 
-Please visit [Project Website](https://github.com/allenmiky/grabloo) for more info.
+## ✨ Features
 
-## Installation
+- 🚀 **Accelerated Multi-Connection Downloads:** Splits files into dynamic multi-threaded chunks for maximum bandwidth saturation.
+- 🎬 **Advanced Video & Audio Grabber:** Built-in resolution selector supporting 1080p, 1440p, 4K, 60fps video, and standalone audio tracks.
+- 🍪 **Automatic Browser Cookie Bridge:** Syncs live session cookies from your browser extension to effortlessly bypass YouTube bot verification ("Sign in to confirm you're not a bot").
+- 🌐 **Browser Extensions:** Real-time download capturing for Google Chrome, Mozilla Firefox, Brave, Microsoft Edge, and Opera.
+- ⏰ **Smart Queues & Schedulers:** Organize downloads into queues, set start/stop timers, and configure per-host connection limits.
+- 🎨 **Modern & Adaptive UI:** Fluid animations, customizable dark, light, and OLED black themes with fully responsive controls.
+- 💻 **True Multiplatform:** First-class desktop experience on Windows, Linux, and macOS, alongside Android support.
 
-<a href="https://github.com/amir1376/ab-download-manager/releases/latest"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/amir1376/ab-download-manager?color=greenlight&label=latest%20release"></a>
+---
 
-### Download and Install the App
-
-<a href="https://github.com/allenmiky/grabloo"><img src="https://img.shields.io/badge/Official%20Website-897BFF?logo=github&logoColor=fff&style=flat-square" alt="Official Website" height="32" /></a>
-<a href="https://github.com/amir1376/ab-download-manager/releases/latest"><img src="https://img.shields.io/badge/GitHub%20Releases-2a2f36?logo=github&logoColor=fff&style=flat-square" alt="GitHub Releases" height="32" /></a>
-
-#### Installation script (Linux)
-
-The recommended way to install the app on Linux
-
-```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/amir1376/ab-download-manager/master/scripts/install.sh)
-```
-
-#### Winget or Scoop (for Windows)
-
-**winget**:
-
-```bash
-winget install amir1376.ABDownloadManager
-```
-
-**scoop**:
-
-```bash
-scoop install extras/abdownloadmanager
-```
-
-#### Homebrew (for macOS & Linux)
-
-```bash
-brew tap amir1376/tap && brew install --cask ab-download-manager
-```
-
-> ⚠️ **Warning:** This software is NOT on Google Play or other app stores unless listed here. Any version **claiming to be or related to this project** should be considered SCAM and UNSAFE.
-
-For alternative installation methods, uninstallation instructions, and more details, please refer to the [wiki](https://github.com/amir1376/ab-download-manager/wiki/) page.
-
-### Browser Extensions
-
-<a href="https://addons.mozilla.org/en-US/firefox/addon/ab-download-manager/"><img src="https://img.shields.io/amo/v/ab-download-manager?label=Firefox&logo=firefoxbrowser" alt="Firefox Add-ons Version"></a>
-<a href="https://chromewebstore.google.com/detail/bbobopahenonfdgjgaleledndnnfhooj"> <img src="https://img.shields.io/chrome-web-store/v/bbobopahenonfdgjgaleledndnnfhooj?label=Chrome&logo=googlechrome" alt="Chrome Web Store Version"></a>
-
-You can download the browser extension to integrate the app with your browser.
-
-<p align="left">
-<a href="https://addons.mozilla.org/firefox/addon/ab-download-manager/">
-    <picture>
-        <img alt="Firefox Extension" src="./assets/banners/firefox-extension.png" height="48">
-    </picture>
-</a>
-<a href="https://chromewebstore.google.com/detail/bbobopahenonfdgjgaleledndnnfhooj">
-    <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="./assets/banners/chrome-extension_dark.png" height="48">
-        <source media="(prefers-color-scheme: light)" srcset="./assets/banners/chrome-extension_light.png" height="48">
-        <img alt="Chrome Extension" src="./assets/banners/chrome-extension_light.png" height="48">
-    </picture>
-</a>
-</p>
-
-## Screenshots
+## 📸 Screenshots
 
 <div align="center">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./assets/screenshots/app-home_dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="./assets/screenshots/app-home_light.png">
-  <img alt="App Home Section" src="./assets/screenshots/app-home_dark.png">
-</picture>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./assets/screenshots/app-download_dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="./assets/screenshots/app-download_light.png">
-  <img alt="App Download Section" src="./assets/screenshots/app-download_dark.png">
-</picture>
+  ### Main Download Manager
+  <!-- ==================== SCREENSHOT PLACEHOLDER 1 ==================== -->
+  <img src="assets/screenshots/app-home_dark.png" alt="Grabbo Dashboard" width="80%" onerror="this.style.display='none'"/>
+  <p><em>[Screenshot: Grabbo Main Dashboard - Dark Theme]</em></p>
+
+  <br/>
+
+  ### 4K Video Quality Selector
+  <!-- ==================== SCREENSHOT PLACEHOLDER 2 ==================== -->
+  <img src="assets/screenshots/video_selector.png" alt="Grabbo 4K Video Quality Selector" width="80%" onerror="this.style.display='none'"/>
+  <p><em>[Screenshot: 4K / 1080p / 60fps Media Resolution Dropdown]</em></p>
+
+  <br/>
+
+  ### Add Download Dialog
+  <!-- ==================== SCREENSHOT PLACEHOLDER 3 ==================== -->
+  <img src="assets/screenshots/add_download_dialog.png" alt="Add Download Dialog" width="80%" onerror="this.style.display='none'"/>
+  <p><em>[Screenshot: Add Download Dialog with Pinned Action Controls]</em></p>
+
 </div>
 
-## Community
+---
 
-Join the discussion on [GitHub Discussions](https://github.com/amir1376/ab-download-manager/discussions).
+## 📥 Installation
 
-## Repositories And Source Code
+> **Note:** Binary releases and direct installers will be made available here once the initial release builds are published.
 
-There are multiple repositories related to the **Grabbo** project:
+### Desktop (Windows / Linux / macOS)
+- **Windows:** Standalone `.exe` installer (with automatic browser host registration).
+- **Linux:** Native binary bundle and `.desktop` integration script.
+- **macOS:** `.dmg` application image.
 
-| Repository                                                                                 | Description                                                                   |
-|--------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
-| [Main Application](https://github.com/amir1376/ab-download-manager) (You are here)         | Contains the  **Application** that runs on your  **device**                   |
-| [Browser Integration](https://github.com/amir1376/ab-download-manager-browser-integration) | Contains the **Browser Extension** to be installed on your  **browser**       |
-| [Website](https://github.com/amir1376/ab-download-manager-website)                         | Contains the **Grabbo** [website](https://github.com/allenmiky/grabloo) |
+### Browser Extension
+The companion browser extension catches downloads from your browser and enables 4K YouTube stream extraction.
+- **Chrome / Brave / Edge:** Available via unpacked extension or Web Store package.
+- **Firefox:** Manifest V3 / V2 compatible add-on.
 
-I've spent a lot of time to create this project.
+---
 
-If you like my work, please consider giving it a ⭐ — thanks! ❤️
+## 🛠️ Build From Source
 
-## Bug Report
+### Prerequisites
+- **JDK:** Java 21 or Java 25 (`JAVA_HOME` pointing to your JDK).
+- **Git**
 
-If you notice any bugs in the source code, please report them via the `GitHub Issues` section.
+### 1. Build the Desktop Application
+```bash
+# Clone the repository
+git clone https://github.com/allenmiky/grabloo.git
+cd grabloo
 
-## Build From Source
+# Compile the desktop application
+./gradlew :desktop:app:compileKotlin
 
-To compile and test the desktop app on your local machine,
-follow these steps:
+# Run the app locally
+./gradlew :desktop:app:run
+```
 
-1. Clone the project.
-2. Download and extract the [JBR](https://github.com/JetBrains/JetBrainsRuntime/releases), and make it available by either:
-    
-    - Adding it to your `PATH`, or
-    - Setting the `JAVA_HOME` environment variable to its installation path.
-  
-3. Navigate to the project directory, open your terminal and execute the following command:
+### 2. Build the Browser Extension
+```bash
+cd ab-download-manager-browser-integration
 
-    ```bash
-    ./gradlew createReleaseFolderForCi
-    ```
+# Install dependencies
+npm install
 
-4. The output will be available at:
+# Build extension for Chrome & Firefox
+npm run build
+```
+Packaged extension outputs will be in `ab-download-manager-browser-integration/dist/`.
 
-    ```
-    <project_dir>/build/ci-release
-    ```
+---
 
-> **Note**. This project is compiled and published by GitHub actions [here](./.github/workflows/publish.yml), so if you
-> faced any problem you can check that too.
+## 📜 Credits & License
 
-## Translations
+- Based on the open-source architecture originally created by [amir1376](https://github.com/amir1376).
+- Enhanced with native YouTube media extraction and continuous browser integration by the **Grabbo** team.
+- Licensed under the **Apache License, Version 2.0**. See the [LICENSE](LICENSE) file for complete details.
 
-If you'd like to help translate Grabbo into another language, or improve existing translations, you can do so on Crowdin when the project is migrated. Here's how:
-
-- Visit the project on Crowdin (link TBD)
-- Please DO NOT submit translations via pull requests.
-- If you want to add a new language, please see [this](https://github.com/amir1376/ab-download-manager/issues/144).
-
-## Contribution
-
-If you want to contribute to this project, please read [Contributing Guide](CONTRIBUTING.md) first.
-
-## Support the Project
-
-If you'd like to support the project, see [DONATE.md](DONATE.md) for details.
-# grabloo

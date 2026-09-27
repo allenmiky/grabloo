@@ -1,161 +1,120 @@
-# Grabbo — Future Site Configuration
+# Grabbo — Future Branding & Site Integration Guide
 
-This file documents all URLs/handles needed for the Grabbo rebrand. Replace placeholders when your new infrastructure is ready.
-
----
-
-## Primary Domain
-
-| Purpose | Placeholder | Actual Value (TODO) |
-|---------|-------------|---------------------|
-| Main website | `https://grabbo.app` | |
-| Download page | `https://grabbo.app/download` | |
-| Donate page | `https://grabbo.app/donate` | |
-| API/docs | `https://grabbo.app/api` | |
+This guide documents **exactly which files and UI menus** consume the website, social, and donation links once your website and brand infrastructure are ready.
 
 ---
 
-## Social / Community
+## 1. Quick Master Switch (`shared/app/build.gradle.kts`)
 
-| Platform | Placeholder | Actual Value (TODO) |
-|----------|-------------|---------------------|
-| Telegram Channel | `https://t.me/grabbo` | |
-| Telegram Group | `https://t.me/grabbo_discussion` | |
-| Twitter/X | `https://x.com/grabbo_app` | |
-| GitHub Discussions | `https://github.com/amir1376/ab-download-manager/discussions` | (keep current) |
-| Matrix/Discord | `https://matrix.to/#/#grabbo:matrix.org` | |
+Because we made the UI dynamic, updating these variables in `shared/app/build.gradle.kts` will **automatically light up the corresponding buttons and menus** across the entire application without needing to write any UI code:
 
----
-
-## Distribution / Store Links
-
-| Platform | Placeholder | Actual Value (TODO) |
-|----------|-------------|---------------------|
-| GitHub Releases | `https://github.com/amir1376/ab-download-manager/releases` | (keep current) |
-| Winget | `winget install grabbo` | (need new ID: `grabbo` or `yourname.grabbo`) |
-| Scoop | `scoop install grabbo` | (need new bucket entry) |
-| Homebrew | `brew install --cask grabbo` | (need new cask) |
-| AUR (Arch) | `yay -S grabbo` | (need new PKGBUILD) |
-| Flatpak | `flatpak install flathub app.grabbo.Grabbo` | (need new Flatpak ID) |
-| Snap | `snap install grabbo` | (need new Snap ID) |
-
----
-
-## Browser Extensions
-
-| Browser | Current ID/URL | New ID/URL (TODO) | Notes |
-|---------|----------------|-------------------|-------|
-| Firefox (AMO) | `firefox-integration@abdownloadmanager.com` | **KEEP AS-IS** | Changing breaks existing installs |
-| Chrome Web Store | `bbobopahenonfdgjgaleledndnnfhooj` | **KEEP AS-IS** | Changing breaks existing installs |
-| Edge Add-ons | (same as Chrome) | **KEEP AS-IS** | |
-| Firefox listing URL | `https://addons.mozilla.org/firefox/addon/ab-download-manager/` | Update when you publish new version | |
-| Chrome listing URL | `https://chromewebstore.google.com/detail/grabbo/...` | Update when you publish new version | |
-
----
-
-## Translation / Localization
-
-| Platform | Current | New (TODO) |
-|----------|---------|------------|
-| Crowdin Project | `ab-download-manager` | Migrate or rename project |
-| Crowdin URL | `https://crowdin.com/project/ab-download-manager` | |
-
----
-
-## GitHub / Code Hosting
-
-| Item | Current | New (TODO) |
-|------|---------|------------|
-| Main repo | `https://github.com/amir1376/ab-download-manager` | (keep — git history) |
-| Extension repo | `https://github.com/amir1376/ab-download-manager-browser-integration` | (keep) |
-| Website repo | `https://github.com/amir1376/ab-download-manager-website` | Rename to `grabbo-website` |
-| Issue tracker | GitHub Issues | (keep) |
-| Wiki | `https://github.com/amir1376/ab-download-manager/wiki` | (keep) |
-
----
-
-## Installer / Packaging Metadata
-
-| Field | Placeholder |
-|-------|-------------|
-| App name (display) | `Grabbo` |
-| App name (binary) | `Grabbo` / `Grabbo.exe` / `Grabbo.app` |
-| CLI binary | `GrabboCli` |
-| Native messaging host | `GrabboNativeMessagingHost` |
-| Data directory | `~/.grabbo` (currently `~/.abdm`) |
-| Windows installer header image | `resources/installer/grabbo-header.bmp` |
-| Windows installer sidebar image | `resources/installer/grabbo-sidebar.bmp` |
-| macOS DMG background | `resources/installer/grabbo-dmg-background.png` |
-| NSIS script template | `resources/installer/nsis-script-template.nsi` (update strings inside) |
-| Copyright | `© 2024-present Grabbo` |
-| Publisher/Vendor | `Grabbo` |
-
----
-
-## Badge / Shield URLs (for README.md)
-
-```markdown
-<!-- Release badge -->
-![GitHub Release](https://img.shields.io/github/v/release/amir1376/ab-download-manager?color=greenlight&label=latest%20release)
-
-<!-- Website badge (update domain) -->
-![Website](https://img.shields.io/badge/website-grabbo.app-purple?labelColor=gray)
-
-<!-- Telegram badges (update handles) -->
-![Telegram Channel](https://img.shields.io/badge/Telegram-Channel-blue?logo=telegram&labelColor=gray)
-![Telegram Group](https://img.shields.io/badge/Telegram-Group-blue?logo=telegram&labelColor=gray)
-
-<!-- Crowdin badge (update project) -->
-![Crowdin](https://badges.crowdin.net/grabbo/localized.svg)
-
-<!-- Extension badges (update when you publish new listings) -->
-![Firefox](https://img.shields.io/amo/v/grabbo?label=Firefox&logo=firefoxbrowser)
-![Chrome](https://img.shields.io/chrome-web-store/v/NEW_CHROME_ID?label=Chrome&logo=googlechrome)
+```kotlin
+// File: shared/app/build.gradle.kts (around line 110)
+buildConfigField("PROJECT_WEBSITE", provider { "https://your-grabbo-site.com" })
+buildConfigField("DONATE_LINK", provider { "https://your-grabbo-site.com/donate" })
+buildConfigField("TELEGRAM_CHANNEL", provider { "https://t.me/your_grabbo_channel" })
+buildConfigField("TELEGRAM_GROUP", provider { "https://t.me/your_grabbo_group" })
+buildConfigField("PROJECT_SOURCE_CODE", provider { "" }) // Keep empty if closed source
+buildConfigField("PROJECT_TRANSLATIONS", provider { "" }) // Add Crowdin/Weblate URL when ready
 ```
 
 ---
 
-## Files That Reference These URLs (Auto-Update Targets)
+## 2. Where Each Link Appears in the App & Menus
 
-When you fill in the actual values above, update these files:
-
-### Main Repo
-- `README.md` — all links, badges, install commands
-- `DONATE.md` — donate URL
-- `.github/FUNDING.yml` — custom funding URL
-- `.github/workflows/winget.yml` — identifier (when you have new Winget ID)
-
-### Extension Repo (`ab-download-manager-browser-integration/`)
-- `README.md` — install link, repo table
-- `package.json` — `homepage`, `repository`, `displayName`, `description`
-- `src/utils/Constants.ts` — `website`, `downloadAppUrl`, `packageName`
-- `public/_locales/en/messages.json` — all user-visible strings
-
-### Shared Config (Build-Time)
-- `shared/app/build.gradle.kts` — `PROJECT_WEBSITE`, `DONATE_LINK`, `PROJECT_TRANSLATIONS`, `TELEGRAM_*`, `INTEGRATION_*`, `PROJECT_GITHUB_*`
+### A. Website URL (`PROJECT_WEBSITE`)
+When you set `PROJECT_WEBSITE`, it automatically enables:
+1. **Desktop About Page**:
+   - Primary website text link under the app icon (`desktop/app/.../pages/about/AboutPage.kt:145`)
+   - Earth icon button in the social row (`AboutPage.kt:194`)
+2. **Android About Page**:
+   - `MainWebsite` clickable link under version number (`android/app/.../pages/about/AboutPage.kt:208`)
+   - Earth icon button in the social row (`AboutPage.kt:264`)
+3. **Desktop & Android Help / Three-Dot Menu**:
+   - "Website" item inside the `Support and Community` menu (`CommonActionFactories.kt:210`)
 
 ---
 
-## Migration Checklist
-
-- [ ] Register domain (e.g., `grabbo.app`)
-- [ ] Deploy website
-- [ ] Create Telegram channel/group
-- [ ] Publish Firefox extension (new listing or update existing)
-- [ ] Publish Chrome extension (new listing or update existing)
-- [ ] Submit Winget package under new ID
-- [ ] Submit Homebrew cask
-- [ ] Submit Scoop bucket entry
-- [ ] Create Flatpak/Snap/AUR packages
-- [ ] Migrate/rename Crowdin project
-- [ ] Update all `.md` files with real URLs
-- [ ] Update `shared/app/build.gradle.kts` BuildConfig values
-- [ ] Rebuild and release
+### B. Donate Link (`DONATE_LINK`)
+When you set `DONATE_LINK`, it automatically enables:
+1. **Desktop About Page**:
+   - Heart icon "Donate" button in the left sidebar (`AboutPage.kt:132`)
+2. **Android About Page**:
+   - Heart icon "Donate" button (`AboutPage.kt:247`)
+3. **Desktop & Android Help Menu**:
+   - "Donate" menu item (`HomeComponent.kt:225`)
 
 ---
 
-## Notes
+### C. Telegram Community (`TELEGRAM_CHANNEL` & `TELEGRAM_GROUP`)
+When either link is set, it automatically enables:
+1. **About Pages (Desktop & Android)**:
+   - Speaker icon (Channel) button (`AboutPage.kt:208`)
+   - Group icon (Discussion group) button (`AboutPage.kt:215`)
+2. **Desktop & Android Help Menu**:
+   - "Telegram" sub-menu containing Channel and Group items (`CommonActionFactories.kt:216`)
 
-- **Extension IDs** (`firefox-integration@abdownloadmanager.com`, Chrome extension ID) — **DO NOT CHANGE**. These are tied to existing user installs. Create new listings if needed, but keep old IDs for auto-update continuity.
-- **GitHub repo URLs** — Keep as-is. They're part of git history. You can add redirect repos later if you rename.
-- **Internal package names** (`com.abdownloadmanager.*`, `ir.amirab.*`) — Intentionally unchanged for upstream merge compatibility.
+---
+
+### D. Source Code (`PROJECT_SOURCE_CODE`)
+*(Currently empty because the app is closed-source/private)*
+If in the future you open-source Grabbo:
+- Setting this URL will auto-enable the "View source code" button in About screens and the Help menu item.
+
+---
+
+## 3. Windows Installer Packaging (`desktop/app/build.gradle.kts`)
+
+When building the Windows `.exe` installer (NSIS), update the `extraParams` map around line 205:
+
+```kotlin
+// File: desktop/app/build.gradle.kts
+extraParams = mapOf(
+    "native_messaging_host_binary_name" to nativeMessagingHostBinaryName,
+    "cli_binary_name" to cliBinaryName,
+    "app_publisher" to "Grabbo",
+    "app_version_with_build" to "${getAppVersionStringForPackaging(TargetFormat.Exe)}.0",
+    "source_code_url" to "", // or your public repo
+    "project_website" to "https://your-grabbo-site.com",
+    "copyright" to "© 2024-present Grabbo",
+    "header_image_file" to project.file("resources/installer/grabbo-header-image.bmp"),
+    "sidebar_image_file" to project.file("resources/installer/grabbo-sidebar-image.bmp")
+)
+```
+
+---
+
+## 4. Browser Extension Sync (`ab-download-manager-browser-integration/`)
+
+When your website is live:
+1. **`src/utils/Constants.ts`**:
+   ```typescript
+   const website = "https://your-grabbo-site.com"
+   export default {
+       packageName: "com.grabbo.app",
+       defaultPort: 15151,
+       website: website,
+       downloadAppUrl: website + "/download",
+       repository: "",
+       authHeaderName: "X-Api-Key"
+   }
+   ```
+2. **`package.json`**:
+   Set `"homepage": "https://your-grabbo-site.com"`.
+3. **Options UI (`OptionUi.tsx`)**:
+   Will automatically render the website link in the footer once `Constants.website` is non-empty.
+
+---
+
+## 5. Current Rebranding Status Checklist
+
+- [x] **App Display Name**: "Grabbo" (desktop, android strings, window titles)
+- [x] **Data Directory**: Migrated to `~/.grabbo` (`VersionUtil.kt`)
+- [x] **Incomplete File Extension**: Migrated to `.grabbo.part` (`IncompleteFileUtil.kt`)
+- [x] **Desktop / Autostart Shortcuts**: Migrated to `com.grabbo.app.desktop` (`install.sh`, `uninstall.sh`)
+- [x] **Native Messaging Bridge**: Unified under `com.grabbo.app` (app + extension)
+- [x] **Installer Assets**: Renamed to `grabbo-header-image.bmp` and `grabbo-sidebar-image.bmp`
+- [x] **Android Application Class**: Migrated to `GrabboApp` and synced with `AndroidManifest.xml`
+- [x] **UI Dead Links Cleanup**: All blank/legacy external buttons safely hidden until configured
+- [ ] **Custom Domain Live**: (e.g. `grabbo.app` — to be deployed)
+- [ ] **Community Links Created**: (Telegram / X / Discord — to be added)
