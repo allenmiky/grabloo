@@ -110,13 +110,13 @@ buildConfig {
     buildConfigField(
         "PROJECT_WEBSITE",
         provider {
-            "https://github.com/allenmiky/grabloo"
+            ""
         }
     )
     buildConfigField(
         "PROJECT_SOURCE_CODE",
         provider {
-            "https://github.com/amir1376/ab-download-manager"
+            ""
         }
     )
     buildConfigField(
@@ -128,13 +128,13 @@ buildConfig {
     buildConfigField(
         "PROJECT_GITHUB_OWNER",
         provider {
-            "amir1376"
+            "allenmiky"
         }
     )
     buildConfigField(
         "PROJECT_GITHUB_REPO",
         provider {
-            "ab-download-manager"
+            "grabloo"
         }
     )
     buildConfigField(

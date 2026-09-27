@@ -207,18 +207,28 @@ val supportActionGroup = MenuItem.SubMenu(
     title = Res.string.support_and_community.asStringSource(),
     icon = MyIcons.group,
     items = buildMenu {
-        item(Res.string.website.asStringSource(), MyIcons.appIcon) {
-            URLOpener.openUrl(SharedConstants.projectWebsite)
-        }
-        item(Res.string.source_code.asStringSource(), MyIcons.openSource) {
-            URLOpener.openUrl(SharedConstants.projectSourceCode)
-        }
-        subMenu(Res.string.telegram.asStringSource(), MyIcons.telegram) {
-            item(Res.string.channel.asStringSource(), MyIcons.speaker) {
-                URLOpener.openUrl(SharedConstants.telegramChannelUrl)
+        if (SharedConstants.projectWebsite.isNotBlank()) {
+            item(Res.string.website.asStringSource(), MyIcons.appIcon) {
+                URLOpener.openUrl(SharedConstants.projectWebsite)
             }
-            item(Res.string.group.asStringSource(), MyIcons.group) {
-                URLOpener.openUrl(SharedConstants.telegramGroupUrl)
+        }
+        if (SharedConstants.projectSourceCode.isNotBlank()) {
+            item(Res.string.source_code.asStringSource(), MyIcons.openSource) {
+                URLOpener.openUrl(SharedConstants.projectSourceCode)
+            }
+        }
+        if (SharedConstants.telegramChannelUrl.isNotBlank() || SharedConstants.telegramGroupUrl.isNotBlank()) {
+            subMenu(Res.string.telegram.asStringSource(), MyIcons.telegram) {
+                if (SharedConstants.telegramChannelUrl.isNotBlank()) {
+                    item(Res.string.channel.asStringSource(), MyIcons.speaker) {
+                        URLOpener.openUrl(SharedConstants.telegramChannelUrl)
+                    }
+                }
+                if (SharedConstants.telegramGroupUrl.isNotBlank()) {
+                    item(Res.string.group.asStringSource(), MyIcons.group) {
+                        URLOpener.openUrl(SharedConstants.telegramGroupUrl)
+                    }
+                }
             }
         }
     }

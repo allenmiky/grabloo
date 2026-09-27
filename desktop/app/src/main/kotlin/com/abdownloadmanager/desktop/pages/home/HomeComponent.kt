@@ -216,11 +216,15 @@ class HomeComponent(
             +gotoSettingsAction
         }
         subMenu(Res.string.help.asStringSource()) {
-            +supportActionGroup
-            separator()
+            if (supportActionGroup.items.value.isNotEmpty()) {
+                +supportActionGroup
+                separator()
+            }
             +openOpenSourceThirdPartyLibraries
             +openTranslators
-            +donate
+            if (SharedConstants.donateLink.isNotBlank()) {
+                +donate
+            }
             separator()
             +checkForUpdateAction
             +openAboutAction

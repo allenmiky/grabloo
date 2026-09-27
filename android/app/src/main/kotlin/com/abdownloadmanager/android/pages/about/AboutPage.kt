@@ -210,24 +210,26 @@ fun MainWebsite(
 ) {
     val uriHandler = LocalUriHandler.current
     val websiteUrl = SharedConstants.projectWebsite
-    val websiteDisplayName = remember(websiteUrl) {
-        HttpUrlUtils.getHost(websiteUrl) ?: websiteUrl
-    }
-    Column(
-        modifier
-            .fillMaxWidth()
-            .clickable {
-                uriHandler.openUri(websiteUrl)
-            }
-            .padding(
-                mySpacings.largeSpace
-            ),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = websiteDisplayName,
-            color = myColors.info,
-        )
+    if (websiteUrl.isNotBlank()) {
+        val websiteDisplayName = remember(websiteUrl) {
+            HttpUrlUtils.getHost(websiteUrl) ?: websiteUrl
+        }
+        Column(
+            modifier
+                .fillMaxWidth()
+                .clickable {
+                    uriHandler.openUri(websiteUrl)
+                }
+                .padding(
+                    mySpacings.largeSpace
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = websiteDisplayName,
+                color = myColors.info,
+            )
+        }
     }
 }
 
@@ -243,8 +245,10 @@ fun DevelopedWithLove(modifier: Modifier) {
                 .fillMaxWidth()
                 .wrapContentWidth()
         )
-        Spacer(Modifier.height(mySpacings.largeSpace))
-        DonateButton(Modifier)
+        if (SharedConstants.donateLink.isNotBlank()) {
+            Spacer(Modifier.height(mySpacings.largeSpace))
+            DonateButton(Modifier)
+        }
     }
 }
 
@@ -253,48 +257,73 @@ private fun SocialAndLinks(
     modifier: Modifier = Modifier,
     horizontalPadding: Dp,
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier
-            .padding(
-                horizontal = horizontalPadding,
-            )
-    ) {
-        SocialSmallButton(
-            MyIcons.earth,
-            Res.string.visit_the_project_website.asStringSource(),
-            onClick = {
-                URLOpener.openUrl(SharedConstants.projectWebsite)
+    val buttons = buildList<@Composable () -> Unit> {
+        if (SharedConstants.projectWebsite.isNotBlank()) {
+            add {
+                SocialSmallButton(
+                    MyIcons.earth,
+                    Res.string.visit_the_project_website.asStringSource(),
+                    onClick = {
+                        URLOpener.openUrl(SharedConstants.projectWebsite)
+                    }
+                )
             }
-        )
-        SocialSmallButton(
-            MyIcons.openSource,
-            Res.string.view_the_source_code.asStringSource(),
-            onClick = {
-                URLOpener.openUrl(SharedConstants.projectSourceCode)
+        }
+        if (SharedConstants.projectSourceCode.isNotBlank()) {
+            add {
+                SocialSmallButton(
+                    MyIcons.openSource,
+                    Res.string.view_the_source_code.asStringSource(),
+                    onClick = {
+                        URLOpener.openUrl(SharedConstants.projectSourceCode)
+                    }
+                )
             }
-        )
-        SocialSmallButton(
-            MyIcons.speaker,
-            Res.string.channel.asStringSource(),
-            onClick = {
-                URLOpener.openUrl(SharedConstants.telegramChannelUrl)
+        }
+        if (SharedConstants.telegramChannelUrl.isNotBlank()) {
+            add {
+                SocialSmallButton(
+                    MyIcons.speaker,
+                    Res.string.channel.asStringSource(),
+                    onClick = {
+                        URLOpener.openUrl(SharedConstants.telegramChannelUrl)
+                    }
+                )
             }
-        )
-        SocialSmallButton(
-            MyIcons.group,
-            Res.string.group.asStringSource(),
-            onClick = {
-                URLOpener.openUrl(SharedConstants.telegramGroupUrl)
+        }
+        if (SharedConstants.telegramGroupUrl.isNotBlank()) {
+            add {
+                SocialSmallButton(
+                    MyIcons.group,
+                    Res.string.group.asStringSource(),
+                    onClick = {
+                        URLOpener.openUrl(SharedConstants.telegramGroupUrl)
+                    }
+                )
             }
-        )
-        SocialSmallButton(
-            MyIcons.language,
-            Res.string.translators_contribute_title.asStringSource(),
-            onClick = {
-                URLOpener.openUrl(SharedConstants.projectTranslations)
+        }
+        if (SharedConstants.projectTranslations.isNotBlank()) {
+            add {
+                SocialSmallButton(
+                    MyIcons.language,
+                    Res.string.translators_contribute_title.asStringSource(),
+                    onClick = {
+                        URLOpener.openUrl(SharedConstants.projectTranslations)
+                    }
+                )
             }
-        )
+        }
+    }
+    if (buttons.isNotEmpty()) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = modifier
+                .padding(
+                    horizontal = horizontalPadding,
+                )
+        ) {
+            buttons.forEach { it() }
+        }
     }
 }
 
@@ -311,15 +340,6 @@ private fun CreditsSection(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         val itemModifier = Modifier.fillMaxWidth()
-        AboutPageListItemButton(
-            itemModifier,
-            icon = MyIcons.hearth,
-            title = Res.string.this_is_a_free_and_open_source_software.asStringSource(),
-            description = Res.string.view_the_source_code.asStringSource(),
-            onClick = {
-                URLOpener.openUrl(SharedConstants.projectSourceCode)
-            }
-        )
         AboutPageListItemButton(
             itemModifier,
             icon = MyIcons.openSource,

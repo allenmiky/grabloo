@@ -76,8 +76,10 @@ FunctionEnd
 !define MUI_INSTFILESPAGE_NOAUTOCLOSE
 
 ; configure finish page
+!if "${SOURCE_CODE_URL}" != ""
 !define MUI_FINISHPAGE_LINK "Open project in GitHub"
 !define MUI_FINISHPAGE_LINK_LOCATION "${SOURCE_CODE_URL}"
+!endif
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_FUNCTION RunMainBinary
 

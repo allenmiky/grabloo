@@ -383,11 +383,15 @@ class HomeComponent(
             Res.string.help.asStringSource(),
             MyIcons.question,
         ) {
-            +supportActionGroup
-            separator()
+            if (supportActionGroup.items.value.isNotEmpty()) {
+                +supportActionGroup
+                separator()
+            }
             +createOpenOpenSourceThirdPartyLibrariesPage(openSourceLibrariesPageManager = openSourceLibrariesPageManager)
             +createOpenTranslatorsPageAction(opeTranslatorsPageManager = translatorsPageManager)
-            +donate
+            if (SharedConstants.donateLink.isNotBlank()) {
+                +donate
+            }
             separator()
             +createCheckForUpdateAction(updateComponent)
             +createOpenAboutPage(aboutPageManager)

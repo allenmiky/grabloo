@@ -207,8 +207,8 @@ installerPlugin {
             "cli_binary_name" to cliBinaryName,
             "app_publisher" to "Grabbo",
             "app_version_with_build" to "${getAppVersionStringForPackaging(TargetFormat.Exe)}.0",
-            "source_code_url" to "https://github.com/amir1376/ab-download-manager",
-            "project_website" to "github.com/allenmiky/grabloo",
+            "source_code_url" to "",
+            "project_website" to "",
             "copyright" to "© 2024-present Grabbo",
             "header_image_file" to project.file("resources/installer/abdm-header-image.bmp"),
             "sidebar_image_file" to project.file("resources/installer/abdm-sidebar-image.bmp")
