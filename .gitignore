@@ -9,3 +9,8 @@ local.properties
 
 # Ignore android keystores
 *.jks
+
+# Ignore local JDK packaging overlay
+.custom-jdk/
+.jdk-bin/
+

@@ -121,6 +121,8 @@ nucleus {
 
         // Define the main class for the application.
         mainClass = "$desktopPackageName.AppKt"
+        javaHome = "${rootProject.projectDir}/.custom-jdk"
+        jvmArgs("-Dredhat.crypto-policies=false")
         additionalLaunchers {
             create(cliBinaryName) {
                 mainClass = "$desktopPackageName.cli.CliAppKt"
@@ -154,14 +156,19 @@ nucleus {
             packageVersion = getAppVersionStringForPackaging()
             packageName = getAppName()
             vendor = "Grabbo"
+            description = "Manage and organize your download files better than before"
+            homepage = "https://grabbo.app"
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
             val menuGroupName = getPrettifiedAppName()
             licenseFile.set(rootProject.file("LICENSE"))
+            targetFormats(TargetFormat.Rpm, TargetFormat.Deb)
             linux {
                 appCategory = "Network"
                 iconFile = project.file("icons/icon.png")
                 menuGroup = menuGroupName
                 shortcut = true
+                debMaintainer = "Grabbo <support@grabbo.app>"
+                rpmLicenseType = "Apache-2.0"
             }
             macOS {
                 iconFile = project.file("icons/icon.icns")
@@ -251,6 +258,7 @@ fun defaultJvmArgs(): Array<String> {
         add("--enable-native-access=ALL-UNNAMED")
         add("-Dnucleus.executable.type=dev")
         add("-Dnucleus.app.id=${getAppName()}")
+        add("-Dredhat.crypto-policies=false")
         if (Platform.isMac()) {
             add("-Dapple.awt.enableTemplateImages=true")
         }
@@ -263,6 +271,41 @@ fun Task.dependsOnAOT() {
         dependsOn("generateReleaseAotCache")
     }
 }
+
+/**
+ * jlink (used by the compose plugin to build the bundled runtime) only copies
+ * conf/security/java.security and conf/security/policy into the app image.
+ * On fedora/red hat, java.security is patched with:
+ *   include redhat/${redhat.crypto-policies}/crypto-policies.properties
+ * Since conf/security/redhat is not part of the image and our launchers pass -Dredhat.crypto-policies=false,
+ * that include resolves to a missing file (redhat/false/crypto-policies.properties) and every
+ * java.security read blows up with:
+ *   java.lang.InternalError: Unable to include 'redhat/false/crypto-policies.properties'
+ * (triggered as soon as InetAddress/TLS is touched, so the app dies on startup)
+ *
+ * The runtime is private to the app, so distro level crypto-policies integration is not applicable here,
+ * and the launchers already disable it: just comment the include out of the bundled java.security.
+ */
+fun disableRedhatCryptoPoliciesInBundledRuntime() {
+    val binariesDir = project.layout.buildDirectory.dir("compose/binaries").get().asFile
+    if (!binariesDir.isDirectory) return
+    binariesDir.walkTopDown()
+        .filter { it.isFile && it.path.endsWith("lib/runtime/conf/security/java.security") }
+        .forEach { javaSecurity ->
+            val content = javaSecurity.readText()
+            val patched = Regex("^include redhat/.*$", RegexOption.MULTILINE)
+                .replace(content) { match -> "#${match.value}" }
+            if (patched != content) {
+                javaSecurity.writeText(patched)
+                logger.lifecycle("Disabled redhat crypto-policies include in ${javaSecurity.absolutePath}")
+            }
+        }
+}
+
+tasks.matching { it.name == "createDistributable" || it.name == "createReleaseDistributable" }
+    .configureEach {
+        doLast { disableRedhatCryptoPoliciesInBundledRuntime() }
+    }
 
 val postReleaseDistributable = tasks.register("postReleaseDistributable") {
     dependsOn("createReleaseDistributable")
