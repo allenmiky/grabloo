@@ -14,10 +14,10 @@ logger() {
 
   if [[ "$1" == "error" ]]; then
     # Red color for errors
-    echo -e "${timestamp} -- ABDM-Installer [Error]: \033[0;31m$@\033[0m" | tee -a ${LOG_FILE}
+    echo -e "${timestamp} -- Grabbo-Installer [Error]: \033[0;31m$@\033[0m" | tee -a ${LOG_FILE}
   else
     # Default color for non-error messages
-    echo -e "${timestamp} -- ABDM-Installer [Info]: $@" | tee -a ${LOG_FILE}
+    echo -e "${timestamp} -- Grabbo-Installer [Info]: $@" | tee -a ${LOG_FILE}
   fi
 }
 
@@ -171,9 +171,9 @@ delete_old_version() {
 
 # --- Generate a .desktop file for the app
 generate_desktop_file() {
-    cat <<EOF > "$HOME/.local/share/applications/com.abdownloadmanager.desktop"
+    cat <<EOF > "$HOME/.local/share/applications/com.grabbo.app.desktop"
 [Desktop Entry]
-Name=AB Download Manager
+Name=Grabbo
 Comment=Manage and organize your download files better than before
 GenericName=Downloader
 Categories=Utility;Network;
@@ -190,7 +190,7 @@ download_zip() {
     # Remove the app tarball if it exists in /tmp
     remove_if_exists "/tmp/$ASSET_NAME"
 
-    logger "downloading AB Download Manager ..."
+    logger "downloading Grabbo ..."
     # Perform the download with curl
     if curl --progress-bar -fSL -o "/tmp/$ASSET_NAME" "${DOWNLOAD_URL}"; then
         logger "download finished successfully"
@@ -206,7 +206,7 @@ download_zip() {
 # --- Install the app
 install_app() {
 
-    logger "Installing AB Download Manager ..."
+    logger "Installing Grabbo ..."
     # --- Setup ~/.local directories
     mkdir -p "$HOME/.local/bin" "$HOME/.local/share/applications"
     tar -xzf "/tmp/$ASSET_NAME" -C "$HOME/.local"
@@ -220,7 +220,7 @@ install_app() {
     # Create a .desktop file in ~/.local/share/applications
     generate_desktop_file
 
-    logger "AB Download Manager installed successfully"
+    logger "Grabbo installed successfully"
     logger "it can be found in Applications menu or run '$APP_NAME' in terminal"
     logger "Make sure $HOME/.local/bin exists in PATH"
     logger "installation logs saved in: ${LOG_FILE}"

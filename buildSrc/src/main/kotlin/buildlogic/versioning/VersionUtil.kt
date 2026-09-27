@@ -29,11 +29,11 @@ fun Project.getPrettifiedAppName(): String {
     return "Grabbo"
 }
 fun Project.getAppDataDirName(): String {
-    return ".abdm"
+    return ".grabbo"
 }
 
 fun Project.getApplicationPackageName(): String {
-    return "com.abdownloadmanager"
+    return "com.grabbo.app"
 }
 
 fun Project.getPublicApplicationPackageName(): String {

@@ -16,7 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-class ABDMApp : Application(), KoinComponent {
+class GrabboApp : Application(), KoinComponent {
     val appManager: ABDMAppManager by inject()
     val appRepository: BaseAppRepository by inject()
     val previousVersion: PreviousVersion by inject()

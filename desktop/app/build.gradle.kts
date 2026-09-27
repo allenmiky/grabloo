@@ -210,8 +210,8 @@ installerPlugin {
             "source_code_url" to "",
             "project_website" to "",
             "copyright" to "© 2024-present Grabbo",
-            "header_image_file" to project.file("resources/installer/abdm-header-image.bmp"),
-            "sidebar_image_file" to project.file("resources/installer/abdm-sidebar-image.bmp")
+            "header_image_file" to project.file("resources/installer/grabbo-header-image.bmp"),
+            "sidebar_image_file" to project.file("resources/installer/grabbo-sidebar-image.bmp")
         )
     }
     macos {

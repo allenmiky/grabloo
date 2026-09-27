@@ -6,7 +6,7 @@ import android.content.Context
 import com.abdownloadmanager.github.GithubApi
 import com.abdownloadmanager.UpdateDownloadLocationProvider
 import com.abdownloadmanager.UpdateManager
-import com.abdownloadmanager.android.ABDMApp
+import com.abdownloadmanager.android.GrabboApp
 import com.abdownloadmanager.android.pages.home.HomePageStateToPersist
 import com.abdownloadmanager.android.pages.onboarding.permissions.ABDMPermissions
 import com.abdownloadmanager.android.pages.onboarding.permissions.PermissionManager
@@ -465,7 +465,7 @@ val startUpModule = module {
     }
 }
 
-fun getAppModule(context: ABDMApp) = module {
+fun getAppModule(context: GrabboApp) = module {
     includes(downloaderModule)
     includes(downloadSystemModule)
     includes(coroutineModule)
@@ -672,7 +672,7 @@ fun getAppModule(context: ABDMApp) = module {
         )
     }
     single { context }.apply {
-        bind<ABDMApp>()
+        bind<GrabboApp>()
         bind<Application>()
         bind<Context>()
     }
@@ -722,7 +722,7 @@ fun getAppModule(context: ABDMApp) = module {
 
 
 object Di : KoinComponent {
-    fun boot(applicationContext: ABDMApp) {
+    fun boot(applicationContext: GrabboApp) {
         startKoin {
             modules(getAppModule(applicationContext))
         }
