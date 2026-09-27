@@ -41,9 +41,17 @@ fun Window.moveSafe(
             position.y.value.toInt(),
         ),
     ) + insets
+    val minX = insets.left
+    val maxX = maxOf(minX, screenSize.width - insets.right - window.width)
+    val minY = insets.top
+    val maxY = maxOf(minY, screenSize.height - insets.bottom - window.height)
+
+    val finalX = if (window.width > 0) offset.x.coerceIn(minX, maxX) else offset.x
+    val finalY = if (window.height > 0) offset.y.coerceIn(minY, maxY) else offset.y
+
     window.setLocation(
-        offset.x,
-        offset.y,
+        finalX,
+        finalY,
     )
 }
 

@@ -22,6 +22,12 @@ sealed interface ProcessingDownloadItemState : IDownloadItemState {
 
     val isWaiting: Boolean
 
+    /**
+     * short human readable description of what an external downloader is doing right now. only
+     * downloaders that run a subprocess and report no parts (yt-dlp) have something to say here.
+     */
+    val processStatusText: String? get() = null
+
     fun canBePaused() = isWaiting || status is DownloadJobStatus.IsActive
     fun canBeResumed() = status is DownloadJobStatus.CanBeResumed && !isWaiting
 }
@@ -86,6 +92,7 @@ data class ExplicitProgressProcessingDownloadItemState(
     override val isWaiting: Boolean,
     override val progress: Long,
     override val percent: Int?,
+    override val processStatusText: String? = null,
 ) : ProcessingDownloadItemState {
     override val hasProgress get() = progress > 0
     override val gotAnyProgress = progress > 0L

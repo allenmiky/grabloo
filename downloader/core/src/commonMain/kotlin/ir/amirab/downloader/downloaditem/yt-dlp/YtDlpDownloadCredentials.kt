@@ -19,6 +19,7 @@ data class YtDlpDownloadCredentials(
     override val downloadPage: String? = null,
     override val title: String? = null,
     override val thumbnailUrl: String? = null,
+    val ytCookies: String? = null,
 ) : IYtDlpCredentials {
     override fun copy(
         link: Option<String>,

@@ -15,7 +15,6 @@ import ir.amirab.downloader.utils.ExceptionUtils
 import ir.amirab.downloader.utils.printStackIfNOtUsual
 import ir.amirab.util.tryLocked
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
@@ -23,12 +22,46 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.time.Duration.Companion.milliseconds
+
+/**
+ * yt-dlp does its work in stages and reports the current one on stdout. the ui has no part list to
+ * show for this downloader, so this is what fills that gap and tells the user why the download is
+ * still running before the first byte arrives.
+ */
+sealed interface YtDlpPhase {
+    /** nothing useful was reported yet */
+    data object Starting : YtDlpPhase
+
+    /** yt-dlp is resolving the page and picking formats, no bytes are moving yet */
+    data class Resolving(val message: String) : YtDlpPhase
+
+    /** the media itself is on the wire, the progress bar is the thing to watch now */
+    data object Downloading : YtDlpPhase
+
+    /**
+     * containers are being merged or cleaned up. this stage can take a noticeable amount of time on
+     * large files, so showing it stops the ui from looking frozen while it happens.
+     */
+    data class PostProcessing(val message: String) : YtDlpPhase
+}
+
+private val logVideoIdPrefix = Regex("""^\S{8,24}:\s+""")
+private val logWhitespace = Regex("""\s+""")
+private val logBareProgress = Regex("""^\d+(\.\d+)?\s?%.*""")
+private val logPostProcessingTags = setOf(
+    "merger",
+    "fixup",
+    "metadata",
+    "postprocess",
+    "embedsubtitle",
+    "sponsorblock",
+)
 
 class YtDlpDownloadJob(
     override val downloadItem: YtDlpDownloadItem,
@@ -56,13 +89,16 @@ class YtDlpDownloadJob(
     private val _progress = MutableStateFlow<YtDlpDownloadProgress?>(null)
     val progressFlow = _progress.asStateFlow()
 
+    private val _phase = MutableStateFlow<YtDlpPhase>(YtDlpPhase.Starting)
+    val phaseFlow = _phase.asStateFlow()
+
     private var downloadedSizeBeforeRetry = 0L
     private var retryJob: Job? = null
     private val retryLock = Mutex()
 
     override suspend fun actualBoot() {
         // http and hls jobs do the same, every path that touches the destination
-        // (resolveOutputFile, downloadRemoved, onDownloadFinishedBeforeSave) runs after boot.
+        // (runYtDlp, downloadRemoved, onDownloadFinishedBeforeSave) runs after boot.
         initializeDestination()
         val missingBinaries = Binaries.getMissing(binDir)
         if (missingBinaries.isNotEmpty()) {
@@ -100,6 +136,7 @@ class YtDlpDownloadJob(
         downloadItem.completeTime = null
         downloadedSizeBeforeRetry = 0
         _progress.value = null
+        _phase.value = YtDlpPhase.Starting
         saveState()
         downloadManager.onDownloadItemChange(downloadItem)
     }
@@ -134,8 +171,9 @@ class YtDlpDownloadJob(
                 onDownloadFinished()
             } catch (e: Exception) {
                 e.printStackIfNOtUsual()
+                val isCancelled = !newActiveScope.isActive || !scope.isActive || ExceptionUtils.isNormalCancellation(e)
                 val shouldStop = when {
-                    ExceptionUtils.isNormalCancellation(e) -> true
+                    isCancelled -> true
                     e is DownloadValidationException -> e.isCritical()
                     else -> false
                 }
@@ -149,11 +187,19 @@ class YtDlpDownloadJob(
     }
 
     private suspend fun runYtDlp() {
-        val outputFile = resolveOutputFile()
-        if (outputFile.exists() && outputFile.length() > 0) {
-            downloadItem.contentLength = outputFile.length()
+        val requestedOutput = getDestination().outputFile
+        if (requestedOutput.exists() && requestedOutput.length() > 0) {
+            downloadItem.contentLength = requestedOutput.length()
             return
         }
+        downloadItem.status = DownloadStatus.Downloading
+        if (downloadItem.startTime == null) {
+            downloadItem.startTime = System.currentTimeMillis()
+        }
+        saveState()
+        _phase.value = YtDlpPhase.Starting
+        // kept local so a retry that goes back through resumeWithNewScope reports itself again
+        var reportedResumed = false
         _progress.update {
             YtDlpDownloadProgress(
                 downloadedBytes = 0,
@@ -162,46 +208,86 @@ class YtDlpDownloadJob(
                 remainingSeconds = 0,
             )
         }
-        YtDlpCli.download(
-            binaryPath = Binaries.getYtDlpPath(binDir),
-            ffmpegDir = Binaries.getFFmpegDir(binDir),
-            link = downloadItem.link,
-            outputFilePath = outputFile.absolutePath,
-            formatSelector = downloadItem.selectedFormatId,
-        ) { progress ->
-            _progress.update { progress }
-            if (progress.totalBytes > 0) {
-                downloadItem.contentLength = progress.totalBytes
-            }
+        val resolvedPathOutput = File(binDir, "resolved-output-$id.txt")
+        val resolved = try {
+            YtDlpCli.download(
+                binaryPath = Binaries.getYtDlpPath(binDir),
+                ffmpegDir = Binaries.getFFmpegDir(binDir),
+                link = downloadItem.link,
+                outputFilePath = requestedOutput.absolutePath,
+                formatSelector = downloadItem.selectedFormatId,
+                resolvedPathOutput = resolvedPathOutput,
+                ytCookies = downloadItem.ytCookies,
+                onProgress = { progress ->
+                    if (!reportedResumed) {
+                        // the first progress line means bytes are actually moving, which is what
+                        // the rest of the app uses to tell "resuming" apart from "downloading".
+                        reportedResumed = true
+                        _phase.value = YtDlpPhase.Downloading
+                        onDownloadResumed()
+                    }
+                    _progress.update { progress }
+                    if (progress.totalBytes > 0) {
+                        downloadItem.contentLength = progress.totalBytes
+                    }
+                },
+                onLogLine = { logLine -> handleLogLine(logLine, reportedResumed) },
+            )
+        } finally {
+            resolvedPathOutput.delete()
         }
-        downloadItem.contentLength = outputFile.length()
+        val finalOutput = applyResolvedOutput(resolved ?: requestedOutput)
+        downloadItem.contentLength = finalOutput.length()
     }
 
     /**
      * yt-dlp decides the container extension based on the selected format, so the real file name
-     * is only known after asking yt-dlp. the item is updated to match the file that will be created.
+     * is only known after the download ran. the item is updated to match the file that was created.
      */
-    private suspend fun resolveOutputFile(): File {
-        val ytDlpPath = Binaries.getYtDlpPath(binDir)
-        val current = getDestination()
-        val alreadyResolved = current.outputFile.name
-        if (downloadItem.name == alreadyResolved) {
-            return current.outputFile
+    /**
+     * yt-dlp prefixes most of its output with a stage tag. "[download]" is dropped because the
+     * progress bar already covers it, the merge/fixup tags happen after the last byte was written,
+     * and every other tag belongs to a site extractor, which all report the resolving stage.
+     */
+    private fun handleLogLine(logLine: YtDlpLogLine, reportedResumed: Boolean) {
+        val message = cleanLogMessage(logLine.message) ?: return
+        val tag = logLine.tag?.lowercase()
+        val phase = when {
+            tag == "download" -> return
+            tag in logPostProcessingTags -> YtDlpPhase.PostProcessing(message)
+            tag == null -> {
+                if (reportedResumed) YtDlpPhase.PostProcessing(message)
+                else YtDlpPhase.Resolving(message)
+            }
+            else -> YtDlpPhase.Resolving(message)
         }
-        val resolved = withContext(Dispatchers.IO) {
-            YtDlpCli.resolveOutputFile(
-                binaryPath = ytDlpPath,
-                ffmpegDir = Binaries.getFFmpegDir(binDir),
-                link = downloadItem.link,
-                outputFilePath = current.outputFile.absolutePath,
-                formatSelector = downloadItem.selectedFormatId,
-            )
+        _phase.value = phase
+    }
+
+    private fun cleanLogMessage(message: String): String? {
+        var text = message
+        val idPrefix = logVideoIdPrefix.matchEntire(text)
+        if (idPrefix != null) {
+            text = text.substring(idPrefix.value.length)
         }
-        val resolvedFile = File(resolved)
+        text = text.replace(logWhitespace, " ").trim()
+        if (text.isEmpty()) return null
+        // the line our own --print-to-file writes about itself, it is not a download stage
+        if (text.startsWith("Writing '")) return null
+        if (logBareProgress.matches(text)) return null
+        return text
+    }
+
+    private suspend fun applyResolvedOutput(resolvedFile: File): File {
         val newName = resolvedFile.name
-        if (newName != downloadItem.name) {
+        val newFolder = resolvedFile.parentFile?.absolutePath
+        val nameChanged = newName != downloadItem.name
+        val folderChanged = newFolder != null && newFolder != downloadItem.folder
+        if (nameChanged || folderChanged) {
             downloadItem.name = newName
-            downloadItem.folder = resolvedFile.parentFile.absolutePath
+            if (newFolder != null) {
+                downloadItem.folder = newFolder
+            }
             saveDownloadItem()
             downloadManager.onDownloadItemChange(downloadItem)
         }

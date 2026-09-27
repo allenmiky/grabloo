@@ -19,6 +19,7 @@ import ir.amirab.downloader.downloaditem.yt_dlp.YtDlpDownloadCredentials
 import ir.amirab.downloader.downloaditem.yt_dlp.YtDlpDownloadItem
 import ir.amirab.downloader.downloaditem.yt_dlp.YtDlpDownloadJob
 import ir.amirab.downloader.downloaditem.yt_dlp.YtDlpDownloader
+import ir.amirab.downloader.downloaditem.yt_dlp.YtDlpPhase
 import ir.amirab.downloader.monitor.ProcessingDownloadItemFactoryInputs
 import ir.amirab.downloader.monitor.ExplicitProgressProcessingDownloadItemState
 import ir.amirab.downloader.monitor.ProcessingDownloadItemState
@@ -176,7 +177,23 @@ class YtDlpDownloaderInUi(
             isWaiting = props.isWaiting,
             progress = downloadedBytes,
             percent = if (contentLength <= 0) null else calcPercent(downloadedBytes, contentLength),
+            processStatusText = job.phaseFlow.value.toDisplayText(),
         )
+    }
+
+    /**
+     * this downloader has no part list to render, so the current stage is the only thing the user
+     * can look at to tell what yt-dlp is busy with. only the stage name is shown, the raw line
+     * yt-dlp printed can contain the full destination path and is english only anyway.
+     */
+    private fun YtDlpPhase.toDisplayText(): String? {
+        val resource = when (this) {
+            is YtDlpPhase.Starting -> Res.string.yt_dlp_phase_starting
+            is YtDlpPhase.Resolving -> Res.string.yt_dlp_phase_resolving
+            is YtDlpPhase.Downloading -> Res.string.downloading
+            is YtDlpPhase.PostProcessing -> Res.string.yt_dlp_phase_post_processing
+        }
+        return resource.asStringSource().getString()
     }
 
     override val name: StringSource = Res.string.yt_dlp_downloader_name.asStringSource()

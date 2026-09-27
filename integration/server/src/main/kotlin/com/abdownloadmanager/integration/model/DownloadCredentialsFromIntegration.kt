@@ -40,6 +40,7 @@ data class YtDlpDownloadCredentialsFromIntegration(
     override val suggestedName: String? = null,
     val title: String? = null,
     val thumbnailUrl: String? = null,
+    val ytCookies: String? = null,
 ) : IDownloadCredentialsFromIntegration
 
 @Serializable

@@ -42,6 +42,7 @@ class YtDlpLinkChecker(
         return YtDlpCli.fetchVideoInfo(
             binaryPath = Binaries.getYtDlpPath(binDir),
             link = credentials.link,
+            ytCookies = credentials.ytCookies,
         ).toResponseInfo()
     }
 
@@ -49,6 +50,7 @@ class YtDlpLinkChecker(
         return YtDlpCli.fetchFormats(
             binaryPath = Binaries.getYtDlpPath(binDir),
             link = credentials.value.link,
+            ytCookies = credentials.value.ytCookies,
         )
     }
 }

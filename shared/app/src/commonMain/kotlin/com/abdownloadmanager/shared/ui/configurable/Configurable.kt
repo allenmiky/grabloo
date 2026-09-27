@@ -13,11 +13,19 @@ abstract class Configurable<T>(
     val title: StringSource,
     val description: StringSource,
     val backedBy: MutableStateFlow<T>,
-    val validate: (T) -> Boolean = { true },
+    validate: (T) -> Boolean = { true },
     val describe: (T) -> StringSource,
     val enabled: StateFlow<Boolean> = DefaultEnabledValue,
     val visible: StateFlow<Boolean> = DefaultVisibleValue,
 ) {
+    /**
+     * open so a configurable whose valid values are only known later can narrow them at runtime,
+     * see [BaseEnumConfigurable]. this has to be a property and not the constructor parameter
+     * itself: a lambda handed to the superclass is built where `this` does not exist yet, so it can
+     * only ever capture a construction time snapshot, and a value the renderer offers would then be
+     * rejected by [set] without any visible reason.
+     */
+    open val validate: (T) -> Boolean = validate
     // each configurable should have a unique key
     // we use this to retrieve its renderer from registry
     interface Key

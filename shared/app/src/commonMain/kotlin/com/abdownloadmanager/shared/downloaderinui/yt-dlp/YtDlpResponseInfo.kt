@@ -1,12 +1,14 @@
 package com.abdownloadmanager.shared.downloaderinui.yt_dlp
 
 import ir.amirab.downloader.connection.IResponseInfo
+import ir.amirab.downloader.downloaditem.yt_dlp.YtDlpFormat
 import ir.amirab.downloader.downloaditem.yt_dlp.YtDlpVideoInfo
 
 data class YtDlpResponseInfo(
     val title: String?,
     val fileSize: Long?,
     val isLive: Boolean,
+    val formats: List<YtDlpFormat> = emptyList(),
     val unsuccessFullThrowable: Throwable? = null,
 ) : IResponseInfo {
     override val isSuccessFul: Boolean = unsuccessFullThrowable == null
@@ -22,5 +24,6 @@ fun YtDlpVideoInfo.toResponseInfo(): YtDlpResponseInfo {
         title = title,
         fileSize = fileSize,
         isLive = isLive,
+        formats = formats,
     )
 }

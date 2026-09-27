@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -64,7 +65,14 @@ abstract class NewDownloadUiChecker<
     }.stateIn(scope, started = SharingStarted.Eagerly, null)
 
     val canAddToDownloadResult = newDownloadChecker.canAddResult
-    val canAdd = newDownloadChecker.canAdd
+    /**
+     * [NewDownloadChecker.validate] does not wait for the link check, so without this the add button
+     * can be pressed while the name and size are still unknown, producing a zero length item with
+     * a fallback name. the item is re-validated once the check finishes, so gating here is enough.
+     */
+    val canAdd = combine(newDownloadChecker.canAdd, linkChecker.isLoading) { canAdd, isLoading ->
+        canAdd && !isLoading
+    }.stateIn(scope, SharingStarted.Eagerly, false)
     val isDuplicate = newDownloadChecker.isDuplicate
 
     private val refreshResponseInfoImmediately = MutableSharedFlow<Unit>(

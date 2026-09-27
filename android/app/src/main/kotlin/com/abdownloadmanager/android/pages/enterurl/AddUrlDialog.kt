@@ -13,7 +13,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -595,14 +597,22 @@ private fun <T> SelectPopup(
                         fontSize = myTextSizes.sm,
                         color = myColors.dimText,
                     )
-                    items.forEach { item ->
-                        Text(
-                            renderItem(item),
-                            Modifier
-                                .fillMaxWidth()
-                                .clickable { onItemSelected(item) }
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
+                    // a video can report more qualities than fit on the screen, three codecs per
+                    // resolution, so the list has to scroll instead of running off the screen
+                    Column(
+                        Modifier
+                            .heightIn(max = 400.dp)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        items.forEach { item ->
+                            Text(
+                                renderItem(item),
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onItemSelected(item) }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                        }
                     }
                 }
             }

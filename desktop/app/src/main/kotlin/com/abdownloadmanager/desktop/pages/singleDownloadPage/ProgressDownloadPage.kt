@@ -344,14 +344,16 @@ private fun RenderPartInfo(
         Column(
             Modifier.weight(1f)
         ) {
-            RenderParts(
-                itemState.parts,
-                Modifier
-                    .padding(horizontal = horizontalPadding)
-                    .height(4.dp)
-                    .clip(myShapes.defaultRounded)
-                    .background(myColors.onBackground / 15)
-            )
+            if (itemState.parts.isNotEmpty()) {
+                RenderParts(
+                    itemState.parts,
+                    Modifier
+                        .padding(horizontal = horizontalPadding)
+                        .height(4.dp)
+                        .clip(myShapes.defaultRounded)
+                        .background(myColors.onBackground / 15)
+                )
+            }
             Box(
                 Modifier.weight(1f)
             ) {
@@ -378,86 +380,95 @@ private fun RenderPartInfo(
                         .withIndex()
                         .toList()
                 }
-                Table(
-                    list = listToShow,
-                    key = {
-                        it.value.id
-                    },
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    wrapHeader = {
-                        WithContentAlpha(0.75f) {
-                            Box(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = horizontalPadding)
-                                    .padding(vertical = 4.dp)
-                            ) {
-                                it()
-                            }
-                        }
-                    },
-                    tableState = remember {
-                        TableState(
-                            cells = PartInfoCells.all()
-                        )
-                    },
-                    wrapItem = { _, _, content ->
-                        WithContentAlpha(1f) {
-                            val interactionSource = remember { MutableInteractionSource() }
-                            val isHovered by interactionSource.collectIsHoveredAsState()
-                            Box(
-                                Modifier
-                                    .padding(horizontal = horizontalPadding)
-                                    .hoverable(interactionSource)
-                                    .background(
-                                        if (isHovered) myColors.onSurface / 10
-                                        else Color.Transparent
-                                    )
-                            ) {
-                                content()
-                            }
-                        }
-                    }
-                ) { cell, it ->
-                    when (cell) {
-                        PartInfoCells.Number -> {
-                            SimpleCellText("${it.index + 1}")
-                        }
-
-                        PartInfoCells.Status -> {
-                            SimpleCellText(prettifyStatus(it.value.status).rememberString())
-                        }
-
-                        PartInfoCells.Downloaded -> {
-                            SimpleCellText(
-                                convertPositiveSizeToHumanReadable(
-                                    it.value.howMuchProceed,
-                                    LocalSizeUnit.current
-                                ).rememberString()
-                            )
-                        }
-
-                        PartInfoCells.Total -> {
-                            SimpleCellText(
-                                it.value.length?.let { length ->
-                                    convertPositiveSizeToHumanReadable(length, LocalSizeUnit.current).rememberString()
-                                } ?: myStringResource(Res.string.unknown),
-                            )
-                        }
-                    }
-                }
-                if (useIsInDebugMode()) {
-                    Row(
+                val processStatusText = itemState.processStatusText
+                if (processStatusText != null && itemState.parts.isEmpty()) {
+                    ProcessStatusPanel(
+                        processStatusText = processStatusText,
+                        itemState = itemState,
+                        horizontalPadding = horizontalPadding,
+                    )
+                } else {
+                    Table(
+                        list = listToShow,
+                        key = {
+                            it.value.id
+                        },
                         modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(bottom = 8.dp, end = 8.dp)
-                            .onClick { setOnlyActiveParts(!onlyActiveParts) },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Only Actives")
-                        Spacer(Modifier.width(4.dp))
-                        CheckBox(onlyActiveParts, { setOnlyActiveParts(it) })
+                            .fillMaxSize(),
+                        wrapHeader = {
+                            WithContentAlpha(0.75f) {
+                                Box(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = horizontalPadding)
+                                        .padding(vertical = 4.dp)
+                                ) {
+                                    it()
+                                }
+                            }
+                        },
+                        tableState = remember {
+                            TableState(
+                                cells = PartInfoCells.all()
+                            )
+                        },
+                        wrapItem = { _, _, content ->
+                            WithContentAlpha(1f) {
+                                val interactionSource = remember { MutableInteractionSource() }
+                                val isHovered by interactionSource.collectIsHoveredAsState()
+                                Box(
+                                    Modifier
+                                        .padding(horizontal = horizontalPadding)
+                                        .hoverable(interactionSource)
+                                        .background(
+                                            if (isHovered) myColors.onSurface / 10
+                                            else Color.Transparent
+                                        )
+                                ) {
+                                    content()
+                                }
+                            }
+                        }
+                    ) { cell, it ->
+                        when (cell) {
+                            PartInfoCells.Number -> {
+                                SimpleCellText("${it.index + 1}")
+                            }
+    
+                            PartInfoCells.Status -> {
+                                SimpleCellText(prettifyStatus(it.value.status).rememberString())
+                            }
+    
+                            PartInfoCells.Downloaded -> {
+                                SimpleCellText(
+                                    convertPositiveSizeToHumanReadable(
+                                        it.value.howMuchProceed,
+                                        LocalSizeUnit.current
+                                    ).rememberString()
+                                )
+                            }
+    
+                            PartInfoCells.Total -> {
+                                SimpleCellText(
+                                    it.value.length?.let { length ->
+                                        convertPositiveSizeToHumanReadable(length, LocalSizeUnit.current).rememberString()
+                                    } ?: myStringResource(Res.string.unknown),
+                                )
+                            }
+                        }
+                    }
+                    if (useIsInDebugMode()) {
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(bottom = 8.dp, end = 8.dp)
+                                .onClick { setOnlyActiveParts(!onlyActiveParts) },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Only Actives")
+                            Spacer(Modifier.width(4.dp))
+                            CheckBox(onlyActiveParts, { setOnlyActiveParts(it) })
+                        }
                     }
                 }
             }
@@ -485,6 +496,124 @@ private fun prettifyStatus(status: PartDownloadStatus): StringSource {
 @Composable
 private fun SimpleCellText(text: String) {
     Text(text, fontSize = myTextSizes.base, maxLines = 1)
+}
+
+/**
+ * yt-dlp runs as an external process and never reports parts, so the parts table is nothing but an
+ * empty header for the whole download. this fills that area with the stage the process is in plus
+ * the overall numbers, so the panel shows what is happening instead of looking stuck.
+ */
+@Composable
+private fun ProcessStatusPanel(
+    processStatusText: String,
+    itemState: ProcessingDownloadItemState,
+    horizontalPadding: Dp,
+) {
+    val sizeUnit = LocalSizeUnit.current
+    val total = itemState.contentLength.takeIf { it > 0 }
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(horizontal = horizontalPadding)
+            .padding(vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            processStatusText,
+            fontSize = myTextSizes.base,
+            maxLines = 1,
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            buildString {
+                append(convertPositiveSizeToHumanReadable(itemState.progress, sizeUnit).getString())
+                if (total != null) {
+                    append(" / ")
+                    append(convertPositiveSizeToHumanReadable(total, sizeUnit).getString())
+                }
+                if (itemState.percent != null) {
+                    append(" (${itemState.percent}%)")
+                }
+            },
+            fontSize = myTextSizes.sm,
+            maxLines = 1,
+            color = myColors.dimText,
+        )
+        Spacer(Modifier.height(10.dp))
+        StageProgressBar(itemState.percent)
+    }
+}
+
+@Composable
+private fun StageProgressBar(percent: Int?) {
+    if (percent != null && percent > 0) {
+        Box(
+            Modifier
+                .fillMaxWidth(0.9f)
+                .height(6.dp)
+                .clip(myShapes.defaultRounded)
+                .background(myColors.onBackground / 15)
+        ) {
+            val animatedProgress by animateFloatAsState(
+                targetValue = (percent / 100f).coerceIn(0f, 1f),
+                animationSpec = tween(150, easing = LinearEasing),
+            )
+            Box(
+                Modifier
+                    .background(myColors.primaryGradient)
+                    .fillMaxHeight()
+                    .fillMaxWidth(animatedProgress)
+            )
+        }
+    } else {
+        IndeterminateStageBar()
+    }
+}
+
+@Composable
+private fun IndeterminateStageBar() {
+    val anim = rememberInfiniteTransition()
+    val duration = 1400
+    val endPos by anim.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(duration), RepeatMode.Restart),
+    )
+    val headWidth by anim.animateFloat(
+        initialValue = 6f,
+        targetValue = 22f,
+        animationSpec = infiniteRepeatable(
+            keyframes {
+                durationMillis = duration
+                6f atFraction 0f
+                22f atFraction 0.4f
+                6f atFraction 1f
+            },
+            repeatMode = RepeatMode.Restart,
+        ),
+    )
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .height(4.dp)
+            .clip(myShapes.defaultRounded)
+            .background(myColors.onBackground / 15)
+    ) {
+        Box(
+            Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(endPos)
+        ) {
+            Box(
+                Modifier
+                    .background(myColors.primaryGradient)
+                    .fillMaxHeight()
+                    .align(Alignment.CenterEnd)
+                    .fillMaxWidth(headWidth)
+            )
+        }
+    }
 }
 
 sealed class PartInfoCells : TableCell<IndexedValue<UiPart>> {

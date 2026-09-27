@@ -36,6 +36,10 @@ data class YtDlpDownloadItem(
     override var thumbnailUrl: String? = null,
     var duration: Double? = null,
     var isLive: Boolean = false,
+    // Cookies sent by the browser extension in Netscape format.
+    // Not persisted across restarts (defaults to null after deserialization) — that is intentional:
+    // cookies are session-specific and the extension will resend them on the next download.
+    var ytCookies: String? = null,
 ) : IDownloadItem, IYtDlpCredentials {
     override fun copy(
         id: Option<Long>,

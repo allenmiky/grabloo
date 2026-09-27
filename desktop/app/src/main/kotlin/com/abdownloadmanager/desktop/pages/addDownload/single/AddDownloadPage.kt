@@ -6,8 +6,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.onClick
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -18,9 +21,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import androidx.compose.ui.window.v2.WindowBoundsProvider
 import androidx.compose.ui.window.v2.WindowSizeProvider
 import androidx.compose.ui.window.v2.rememberDialogState
@@ -33,9 +40,13 @@ import com.abdownloadmanager.shared.downloaderinui.add.CanAddResult
 import com.abdownloadmanager.shared.pages.adddownload.shared.LastUsedLocationsProp
 import com.abdownloadmanager.shared.pages.adddownload.shared.RememberFolderProp
 import com.abdownloadmanager.shared.pages.adddownload.single.BaseAddSingleDownloadComponent
+import com.abdownloadmanager.shared.downloaderinui.yt_dlp.VideoQualityConfigurable
+import com.abdownloadmanager.shared.downloaderinui.yt_dlp.describeAsLabel
+import com.abdownloadmanager.shared.downloaderinui.yt_dlp.describeAsOptionLabel
 import com.abdownloadmanager.shared.ui.configurable.item.IntConfigurable
 import com.abdownloadmanager.shared.ui.widget.*
 import com.abdownloadmanager.shared.util.ClipboardUtil
+import com.abdownloadmanager.shared.util.LocalSizeUnit
 import com.abdownloadmanager.shared.util.ThreadCountLimitation
 import com.abdownloadmanager.shared.util.div
 import com.abdownloadmanager.shared.util.downloaderror.DownloadErrorReason
@@ -68,6 +79,7 @@ fun AddDownloadPage(
     ) {
         Column(
             Modifier
+                .fillMaxHeight()
                 .width(IntrinsicSize.Max)
                 .widthIn(max = 460.dp)
                 .fillMaxWidth()
@@ -94,17 +106,22 @@ fun AddDownloadPage(
                     }
                 }
             }
-            Row(
-                Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+            Column(
+                Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
             ) {
-                RenderFileTypeAndSize(component)
-                Spacer(Modifier.weight(1f))
-                RenderResumeSupport(component)
-                Spacer(Modifier.width(8.dp))
-                ConfigActionsButtons(component)
-            }
-            Spacer(Modifier.height(12.dp))
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RenderFileTypeAndSize(component)
+                    Spacer(Modifier.weight(1f))
+                    RenderResumeSupport(component)
+                    Spacer(Modifier.width(8.dp))
+                    ConfigActionsButtons(component)
+                }
+                Spacer(Modifier.height(12.dp))
             FormLabel(myStringResource(Res.string.links_one_per_line))
             Spacer(Modifier.height(4.dp))
             UrlTextField(
@@ -223,7 +240,14 @@ fun AddDownloadPage(
                 Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                ConnectionsSelect(component)
+                val hasQuality = remember {
+                    component.configurables.any { it is VideoQualityConfigurable }
+                }
+                if (hasQuality) {
+                    QualitySelect(component)
+                } else {
+                    ConnectionsSelect(component)
+                }
                 Spacer(Modifier.width(16.dp))
                 QueueSelect(component)
             }
@@ -234,7 +258,8 @@ fun AddDownloadPage(
                 onValueChange = component.selectQueueComponent::setStartQueue,
                 description = myStringResource(Res.string.start_now),
             )
-            Spacer(Modifier.weight(1f))
+            }
+            Spacer(Modifier.height(8.dp))
             MainActionButtons(component)
             if (component.showSolutionsOnDuplicateDownloadUi) {
                 ShowSolutionsOnDuplicateDownload(component)
@@ -660,6 +685,7 @@ private fun UrlTextField(
         modifier = modifier.fillMaxWidth(),
         singleLine = false,
         minLines = 3,
+        maxLines = 3,
         start = {
             MyIcon(
                 MyIcons.link,
@@ -695,6 +721,97 @@ private fun FormLabel(text: String) {
         fontSize = myTextSizes.base,
         color = myColors.dimText,
     )
+}
+
+@Composable
+private fun QualitySelect(component: BaseAddSingleDownloadComponent) {
+    val qualityConfigurable = remember {
+        component.configurables
+            .filterIsInstance<VideoQualityConfigurable>()
+            .firstOrNull()
+    } ?: return
+    val sizeUnit = LocalSizeUnit.current
+    val selected by qualityConfigurable.stateFlow.collectAsState()
+    val available by qualityConfigurable.visibleQualities.collectAsState()
+    val hiddenCount by qualityConfigurable.hiddenQualityCount.collectAsState()
+    val showingAll by qualityConfigurable.isShowingAllQualities.collectAsState()
+    var open by remember { mutableStateOf(false) }
+
+    val closePopup = {
+        qualityConfigurable.resetShowingAllQualities()
+        open = false
+    }
+
+    LaunchedEffect(open) {
+        if (!open) {
+            qualityConfigurable.resetShowingAllQualities()
+        }
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            "${myStringResource(Res.string.quality)}:",
+            fontSize = myTextSizes.base,
+            color = myColors.dimText,
+        )
+        Spacer(Modifier.width(8.dp))
+        ActionButton(
+            text = selected.describeAsLabel(sizeUnit),
+            onClick = { open = true },
+        )
+    }
+    if (open) {
+        val warningColor = if (myColors.isLight) Color(0xFF6D28D9) else Color(0xFFA78BFA)
+        SelectPopup(
+            title = myStringResource(Res.string.quality),
+            items = available,
+            renderItem = { it.describeAsLabel(sizeUnit) },
+            itemContent = { item ->
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 7.dp)
+                ) {
+                    Text(
+                        text = item.describeAsLabel(sizeUnit),
+                        fontSize = myTextSizes.base,
+                        color = myColors.onBackground,
+                    )
+                    if (item.warning != null) {
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text = "ℹ ${item.warning}",
+                            fontSize = myTextSizes.xs,
+                            color = warningColor,
+                            lineHeight = 14.sp,
+                        )
+                    }
+                }
+            },
+            onDismiss = closePopup,
+            onItemSelected = {
+                qualityConfigurable.set(it)
+                closePopup()
+            },
+            footer = if (hiddenCount > 0 || showingAll) {
+                {
+                    Text(
+                        if (showingAll) "Show fewer options" else "Show all $hiddenCount more options",
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable { qualityConfigurable.toggleShowingAllQualities() }
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                        fontSize = myTextSizes.sm,
+                        color = myColors.primary,
+                    )
+                }
+            } else {
+                null
+            },
+        )
+    }
 }
 
 @Composable
@@ -782,7 +899,13 @@ private fun <T> SelectPopup(
     items: List<T>,
     onDismiss: () -> Unit,
     onItemSelected: (T) -> Unit,
-    renderItem: @Composable (T) -> String,
+    renderItem: @Composable (T) -> String = { it.toString() },
+    itemContent: (@Composable (T) -> Unit)? = null,
+    /**
+     * pinned below the scroll area, for a control that has to stay reachable no matter how long
+     * the list gets. the quality list uses it for the "show all" toggle.
+     */
+    footer: (@Composable () -> Unit)? = null,
 ) {
     val state = rememberDialogState(
         initialBoundsProvider = WindowBoundsProvider(
@@ -794,15 +917,28 @@ private fun <T> SelectPopup(
         state = state,
         resizeable = false,
     ) {
-        LaunchedEffect(window) {
-            window.moveSafe(
-                MouseInfo.getPointerInfo().location.run {
-                    DpOffset(
-                        x = x.dp,
-                        y = y.dp
-                    )
+        val mouseLocation = remember {
+            MouseInfo.getPointerInfo().location.run {
+                DpOffset(
+                    x = x.dp,
+                    y = y.dp
+                )
+            }
+        }
+        DisposableEffect(window) {
+            val updatePosition = {
+                window.moveSafe(mouseLocation)
+            }
+            val listener = object : ComponentAdapter() {
+                override fun componentResized(e: ComponentEvent?) {
+                    updatePosition()
                 }
-            )
+            }
+            window.addComponentListener(listener)
+            updatePosition()
+            onDispose {
+                window.removeComponentListener(listener)
+            }
         }
 
         val shape = myShapes.defaultRounded
@@ -822,7 +958,7 @@ private fun <T> SelectPopup(
             WithContentColor(myColors.onBackground) {
                 Column(
                     Modifier
-                        .widthIn(min = 140.dp, max = 280.dp)
+                        .widthIn(min = 160.dp, max = 340.dp)
                         .width(IntrinsicSize.Max)
                 ) {
                     Text(
@@ -831,17 +967,35 @@ private fun <T> SelectPopup(
                         fontSize = myTextSizes.sm,
                         color = myColors.dimText,
                     )
-                    items.forEach { item ->
-                        Text(
-                            renderItem(item),
-                            Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    onItemSelected(item)
+                    // a video can report more qualities than fit on the screen, three codecs per
+                    // resolution, so the list has to scroll instead of running off the window
+                    Column(
+                        Modifier
+                            .heightIn(max = 280.dp)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        items.forEach { item ->
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onItemSelected(item)
+                                    }
+                            ) {
+                                if (itemContent != null) {
+                                    itemContent(item)
+                                } else {
+                                    Text(
+                                        renderItem(item),
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    )
                                 }
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
+                            }
+                        }
                     }
+                    footer?.invoke()
                 }
             }
         }

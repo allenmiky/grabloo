@@ -127,6 +127,7 @@ class IntegrationHandlerImp : IntegrationHandler, KoinComponent {
                         downloadPage = it.downloadPage,
                         title = it.title,
                         thumbnailUrl = it.thumbnailUrl,
+                        ytCookies = it.ytCookies,
                     )
                 }
             }

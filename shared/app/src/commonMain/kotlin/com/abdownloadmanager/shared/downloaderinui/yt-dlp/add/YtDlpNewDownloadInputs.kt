@@ -31,6 +31,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
+import com.abdownloadmanager.shared.downloaderinui.yt_dlp.VideoQualityConfigurable
+import com.abdownloadmanager.shared.downloaderinui.yt_dlp.VideoQualityOption
+import com.abdownloadmanager.shared.downloaderinui.yt_dlp.VideoQualityOptions
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+
 class YtDlpNewDownloadInputs(
     downloadUiChecker: YtDlpNewDownloadUIChecker,
     private val sizeAndSpeedUnitProvider: SizeAndSpeedUnitProvider,
@@ -44,6 +50,34 @@ class YtDlpNewDownloadInputs(
         >(
     newDownloadUiChecker = downloadUiChecker
 ) {
+    val availableQualities = MutableStateFlow(VideoQualityOptions.NOT_CHECKED_YET)
+    val selectedQuality = MutableStateFlow<VideoQualityOption>(VideoQualityOptions.BEST)
+
+    init {
+        downloadUiChecker.responseInfo
+            .onEach { responseInfo ->
+                // the qualities come from the link that was actually checked, so a failed or
+                // still running check must not leave invented resolutions behind
+                val formats = responseInfo?.formats.orEmpty()
+                val qualities = VideoQualityOptions.getAvailableQualities(formats)
+                availableQualities.value = qualities
+                // the video may no longer have the resolution that was picked before, for example
+                // after the link was edited or rechecked, and a selection that is not on the list
+                // can no longer be set again, so fall back instead of leaving a dead entry.
+                val selected = selectedQuality.value
+                if (qualities.none { it.id == selected.id }) {
+                    selectedQuality.value = qualities.first()
+                }
+            }
+            .launchIn(scope)
+
+        selectedQuality
+            .onEach { quality ->
+                selectedFormatId.value = quality.formatSelector
+            }
+            .launchIn(scope)
+    }
+
     private val selectedFormatId = MutableStateFlow<String?>(null)
     private val threadCount = MutableStateFlow(null as Int?)
     private val speedLimit = MutableStateFlow(0L)
@@ -81,6 +115,7 @@ class YtDlpNewDownloadInputs(
             selectedFormatId = extra.selectedFormatId,
             title = credentials.title,
             thumbnailUrl = credentials.thumbnailUrl,
+            ytCookies = credentials.ytCookies,
         ).withCredentials(credentials)
     }
 
@@ -97,6 +132,13 @@ class YtDlpNewDownloadInputs(
     }
 
     override val configurableList = listOf(
+        VideoQualityConfigurable(
+            title = Res.string.quality.asStringSource(),
+            description = Res.string.video_quality_description.asStringSource(),
+            backedBy = selectedQuality,
+            availableQualities = availableQualities,
+            currentSizeUnit = { sizeAndSpeedUnitProvider.sizeUnit.value },
+        ),
         StringConfigurable(
             Res.string.yt_dlp_format_id.asStringSource(),
             Res.string.yt_dlp_format_id_description.asStringSource(),

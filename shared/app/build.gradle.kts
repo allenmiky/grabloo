@@ -65,6 +65,9 @@ kotlin {
                 api(libs.androidx.activity.compose)
             }
         }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+        }
         val androidMain = getByName("androidMain")
         val desktopMain = getByName("desktopMain")
         desktopMain.dependencies {
