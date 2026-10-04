@@ -2,6 +2,7 @@ package com.abdownloadmanager.desktop.utils
 
 import com.abdownloadmanager.desktop.AppArguments
 import com.abdownloadmanager.shared.util.schemakt.initializeForABDM
+import co.touchlab.kermit.Severity
 import io.github.amir1376.schemakt.Schema
 import ir.amirab.util.guardedEntry
 import ir.amirab.util.logger.AppLogger
@@ -25,8 +26,12 @@ object EntrypointInitializer {
                 )
             }
             AppProperties.boot(AppInfo.definedPaths.appPropertiesFile)
+            val isDebug = AppInfo.isInDebugMode()
             AppLogger.init(
-                writeToConsole = false,
+                // Running from source (an IDE or `gradlew run`) counts as debug mode, so the log
+                // also goes to the console. With this hardcoded to false there was no way to see
+                // anything the app logged while running it from Gradle.
+                writeToConsole = isDebug,
                 logFilePath = AppInfo.definedPaths.logDir
                     .let {
                         it / when (entryType) {
@@ -34,9 +39,8 @@ object EntrypointInitializer {
                             EntryType.CLI -> "CliLog.log"
                             EntryType.NativeMessaging -> "NativeMessaging.log"
                         }
-                    }.takeIf {
-                        AppInfo.isInDebugMode()
-                    },
+                    }.toFile(),
+                minSeverity = if (isDebug) Severity.Verbose else Severity.Info,
             )
             Schema.initializeForABDM()
         }

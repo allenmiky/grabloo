@@ -5,7 +5,7 @@ import co.touchlab.kermit.Severity
 import co.touchlab.kermit.StaticConfig
 import co.touchlab.kermit.platformLogWriter
 import ir.amirab.util.ifThen
-import okio.Path
+import java.io.File
 
 object AppLogger {
     private lateinit var config: StaticConfig
@@ -13,7 +13,7 @@ object AppLogger {
 
     fun init(
         writeToConsole: Boolean,
-        logFilePath: Path?,
+        logFilePath: File?,
         minSeverity: Severity = Severity.Verbose,
     ) {
         config = StaticConfig(
