@@ -1,3 +1,6 @@
+// queues.flatMapLatest {} is used by getActiveOrInactiveQueues / queueModelsFlow below.
+@file:OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+
 package ir.amirab.downloader.queue
 
 import ir.amirab.downloader.DownloadManagerMinimalControl
@@ -224,16 +227,16 @@ private class QueueInfoPersistedData(
         return cached!!
     }
 
-    override suspend fun setModel(model: QueueModel) {
-        if (model == cached) {
+    override suspend fun setModel(queue: QueueModel) {
+        if (queue == cached) {
             //nothing to update
 //            println("Noting to update")
             return
         }
         lock.withLock {
-            db.updateQueue(model)
-//            println("setModel() == $model")
-            cached = model
+            db.updateQueue(queue)
+//            println("setModel() == $queue")
+            cached = queue
         }
     }
 }

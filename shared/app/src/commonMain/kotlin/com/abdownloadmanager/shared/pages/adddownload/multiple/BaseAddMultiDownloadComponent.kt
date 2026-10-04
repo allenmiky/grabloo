@@ -400,6 +400,8 @@ abstract class BaseAddMultiDownloadComponent(
         onRequestClose()
     }
 
+    // flatMapLatest is @ExperimentalCoroutinesApi.
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val listStateFlow: Flow<List<NewMultiDownloadState>> = snapshotFlow { totalList }
         .flatMapLatest { downloadInputs ->
             if (downloadInputs.isEmpty()) flowOf(emptyList())

@@ -337,6 +337,9 @@ class TableState<Item, Cell : TableCell<Item>>(
         setSortBy(
             s.sortBy?.let { sortBy ->
                 findCellById(sortBy.name)?.let {
+                    // sortBy.name is only ever written from a SortableCell, so a persisted sort
+                    // key can never point at a non-sortable cell.
+                    @Suppress("UNCHECKED_CAST")
                     Sort(it as SortableCell<Item>, sortBy.descending)
                 }
             }

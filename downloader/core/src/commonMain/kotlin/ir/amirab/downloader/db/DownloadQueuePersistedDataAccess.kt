@@ -24,7 +24,7 @@ interface IDownloadQueueDatabase {
     suspend fun setAllQueues(queues: List<QueueModel>)
     suspend fun deleteAllQueues()
     suspend fun getQueue(queueId:Long):QueueModel
-    suspend fun deleteQueue(queue: Long)
+    suspend fun deleteQueue(queueId: Long)
     suspend fun updateQueue(queue: QueueModel)
     suspend fun addQueue(queue: QueueModel)
 }

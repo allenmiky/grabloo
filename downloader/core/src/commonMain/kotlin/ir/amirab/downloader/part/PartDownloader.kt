@@ -8,6 +8,7 @@ import ir.amirab.downloader.exception.PartTooManyErrorException
 import ir.amirab.downloader.utils.ExceptionUtils
 import ir.amirab.downloader.utils.printStackIfNOtUsual
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.NonCancellable
@@ -179,6 +180,12 @@ abstract class PartDownloader<
     }
 
     lateinit var onTooManyErrors: ((Throwable) -> Unit)
+
+    // Deliberately GlobalScope, not this downloader's own scope: awaitFinishOrError() runs inside
+    // NonCancellable so the retry loop survives stop(), which cancels `scope`. If this callback were
+    // launched on `scope` it could be silently dropped right when it matters and the download would
+    // wait forever for onTooManyErrors.
+    @OptIn(DelicateCoroutinesApi::class)
     private fun iCantRetryAnymore(throwable: Throwable) {
         lastCriticalException = throwable
         GlobalScope.launch {

@@ -223,6 +223,9 @@ fun <T> Flow<T>.chunked(count: Int): Flow<List<T>> = flow {
     }
 }
 
+// transformLatest is @ExperimentalCoroutinesApi. Opt in here rather than propagating the
+// annotation to every caller of onEachLatest.
+@OptIn(ExperimentalCoroutinesApi::class)
 fun <T> Flow<T>.onEachLatest(block: suspend (T) -> Unit) = transformLatest {
     block(it)
     emit(it)

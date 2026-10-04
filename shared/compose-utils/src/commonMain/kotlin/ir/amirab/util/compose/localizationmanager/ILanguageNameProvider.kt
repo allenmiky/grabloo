@@ -181,9 +181,10 @@ object LanguageNameProvider : ILanguageNameProvider {
 private fun MyLocale.toLocale(): Locale {
     val language = languageCode
     val country = countryCode
-    return if (country == null) {
-        Locale(language)
-    } else {
-        Locale(language, country)
-    }
+    // Locale(String[, String]) has been deprecated since Java 19. Locale.Builder is the supported
+    // replacement and, unlike Locale.of, is also available on older Android runtimes.
+    return Locale.Builder()
+        .setLanguage(language)
+        .apply { if (country != null) setRegion(country) }
+        .build()
 }

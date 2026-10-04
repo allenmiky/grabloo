@@ -59,7 +59,7 @@ fun <T> Flow<T>.asState(
     return state
 }
 
-inline fun <T>MutableState<T>.asState(): State<T> {
+fun <T>MutableState<T>.asState(): State<T> {
     return this as State<T>
 }
 fun <T> State<T>.asStateFlow(): StateFlow<T> {

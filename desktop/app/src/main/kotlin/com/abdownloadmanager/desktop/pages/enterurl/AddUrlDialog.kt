@@ -377,7 +377,8 @@ class AddUrlDialogComponent(
 
     private fun nameOf(url: String): String? {
         try {
-            return java.net.URL(url).path.split('/').last().takeIf { it.isNotBlank() }
+            // new URL(String) is deprecated since Java 20; URI is the supported way to parse.
+            return java.net.URI(url).toURL().path.split('/').last().takeIf { it.isNotBlank() }
         } catch (e: Exception) {
             return null
         }

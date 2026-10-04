@@ -22,10 +22,17 @@ kotlin {
             api(libs.kermit)
             api("ir.amirab.util:platform:1")
         }
+        val commonTest = getByName("commonTest")
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+        }
         val desktopMain = getByName("desktopMain")
         desktopMain.dependencies {
             api(libs.jna.platform)
         }
+        // No explicit desktopTest.dependsOn(commonTest) here: the target is jvm("desktop"), so the
+        // default hierarchy template already wires desktopTest to commonTest. Declaring the edge by
+        // hand made KGP warn that the template was not applied correctly.
         androidMain.dependencies {
             implementation(libs.koin.core)
             implementation(libs.androidx.core.ktx)

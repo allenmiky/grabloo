@@ -344,6 +344,9 @@ abstract class BaseAddSingleDownloadComponent(
                 categoryId = getCategoryIfUseCategoryIsOn()?.id,
             ).invokeOnCompletion {
                 if (queueId != null && startQueue) {
+                    // Deliberately GlobalScope: onRequestClose() below tears down this component's
+                    // scope, and the queue must still start for the downloads that were just added.
+                    @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
                     GlobalScope.launch {
                         downloadSystem.startQueue(queueId)
                     }

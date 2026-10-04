@@ -13,9 +13,12 @@ fun getOptIns(): Set<String> = setOf(
     "androidx.compose.animation.ExperimentalAnimationApi",
     "androidx.compose.foundation.ExperimentalFoundationApi",
     "androidx.compose.ui.ExperimentalComposeUiApi",
+    "kotlinx.coroutines.FlowPreview",
 )
 
 fun getFeatures(): Set<String> = setOf(
+    // Keep in sync with kotlinMultiplatform.gradle.kts: same expect/actual Beta policy.
+    "expect-actual-classes",
 )
 
 val jvmToolchainVersion =  providers.gradleProperty("jvm.toolchain").get().toInt()

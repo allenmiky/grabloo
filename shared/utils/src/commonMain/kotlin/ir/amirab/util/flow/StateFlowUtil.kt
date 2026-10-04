@@ -2,9 +2,14 @@ package ir.amirab.util.flow
 
 import arrow.optics.Lens
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ExperimentalForInheritanceCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.*
 
+// StateFlow/MutableStateFlow carry @SubclassOptInRequired(ExperimentalForInheritanceCoroutinesApi),
+// so implementing them at all requires that opt-in. The members themselves (replayCache,
+// resetReplayCache) are separately @ExperimentalCoroutinesApi.
+@OptIn(ExperimentalForInheritanceCoroutinesApi::class)
 class DerivedStateFlow<T>(
     private val getValue: () -> T,
     private val flow: Flow<T>,
@@ -24,6 +29,7 @@ class DerivedStateFlow<T>(
     }
 }
 
+@OptIn(ExperimentalForInheritanceCoroutinesApi::class)
 @PublishedApi
 internal class TwoWayDerivedStateFlow<T, R>(
     private val upStream: MutableStateFlow<T>,

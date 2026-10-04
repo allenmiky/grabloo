@@ -32,7 +32,9 @@ inline fun <T : Throwable> T.throwIf(condition: (T) -> Boolean) {
         throw this
     }
 }
-inline fun <T : Throwable> T.throwIfCancelled() {
+// Not inline: there is no function-typed parameter here, the lambda is built inside the body, so
+// inlining would save nothing.
+fun <T : Throwable> T.throwIfCancelled() {
     throwIf { ExceptionUtils.isNormalCancellation(this) }
 }
 

@@ -414,8 +414,6 @@ class AppComponent(
                         categoryDialogManager = this,
                     ).apply { addItems(config.newDownloads) }
                 }
-
-                else -> error("should not happened")
             }
             component
         }
@@ -543,6 +541,9 @@ class AppComponent(
             .onEach {
                 closeDownloadDialog(listOf(it.downloadItem.id))
             }.launchIn(scope)
+
+        // Start background prefetch of binaries (non-blocking)
+        binaryDownloadService.startBackgroundPrefetch()
     }
 
     override fun sendNotification(tag: Any, title: StringSource, description: StringSource, type: NotificationType) {
@@ -977,7 +978,7 @@ class AppComponent(
 
     fun startNewDownloads(
         items: List<NewDownloadItemProps>,
-        categorySelectionMode: CategorySelectionMode??,
+        categorySelectionMode: CategorySelectionMode?,
     ): Deferred<List<Long>> {
         return scope.launchWithDeferred {
             downloadSystem.addDownload(
@@ -1219,6 +1220,7 @@ class AppComponent(
         }
     ).subscribeAsStateFlow()
 
+    @Volatile
     private var binaryDownloadOnComplete: ((Boolean) -> Unit)? = null
 
     override fun openBinaryDownloadDialog(onComplete: (Boolean) -> Unit) {
@@ -1230,7 +1232,11 @@ class AppComponent(
 
     override fun closeBinaryDownloadDialog() {
         scope.launch {
-            binaryDownloadOnComplete?.invoke(false)
+            // Pass the actual download result — not hardcoded false — so the caller
+            // (openBinaryDownloadDialogAndAwait) sees success when the user closes
+            // the window after a completed download.
+            val success = binaryDownloadDialogSlot.value.child?.instance?.isSuccess?.value ?: false
+            binaryDownloadOnComplete?.invoke(success)
             binaryDownloadOnComplete = null
             binaryDownloadDialogNavigation.dismiss()
         }

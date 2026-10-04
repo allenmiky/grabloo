@@ -71,8 +71,6 @@ class UpdateInstallerFromArchiveFile(
                 installationFolder = installationFolder,
                 logFile = logFile,
             )
-
-            else -> error("platform $platform not supported")
         }
         val scriptToRun =
             FileSystem.SYSTEM_TEMPORARY_DIRECTORY.resolve("grabbo-updater.run.$scriptExtension")
