@@ -1,16 +1,20 @@
 package ir.amirab.util.binarymanager
 
+import ir.amirab.util.logger.thisLogger
 import ir.amirab.util.platform.Arch
 import ir.amirab.util.platform.Platform
 import ir.amirab.util.platform.Platform.Desktop
 import ir.amirab.util.withoutJPackageEnvVariable
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import co.touchlab.kermit.Severity
 import java.io.File
 import java.io.IOException
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipFile
 
@@ -19,75 +23,151 @@ data class BinaryInfo(
     val version: String,
     val downloadUrl: String,
     val expectedSize: Long = -1,
+    val sha256: String = "",
+    val archiveFormat: ArchiveFormat = ArchiveFormat.None,
+    val targetFileName: String = "",
 )
 
 data class BinaryDownloadProgress(
     val binaryName: String,
-    val bytesDownloaded: Long,
-    val totalBytes: Long,
-    val speed: Long,
-    val isComplete: Boolean,
+    val phase: BinaryPhase = BinaryPhase.Resolve,
+    val bytesDownloaded: Long = 0,
+    val totalBytes: Long = 0,
+    val speed: Long = 0,
+    val isComplete: Boolean = false,
     val error: String? = null,
-)
+) {
+    val percent: Int
+        get() = if (totalBytes > 0) ((bytesDownloaded * 100.0) / totalBytes).coerceIn(0.0, 100.0).toInt() else 0
+}
+
+enum class BinaryPhase {
+    Resolve,
+    Download,
+    Verify,
+    Extract,
+    Complete,
+    Error,
+}
 
 class BinaryDownloadException(message: String) : IOException(message)
 
 object BinaryManager {
-    private const val YT_DLP_REPO = "yt-dlp/yt-dlp"
-    private const val FFMPEG_REPO = "BtbN/FFmpeg-Builds"
     private const val USER_AGENT = "Grabbo"
+    private const val DEFAULT_BUFFER_SIZE = 8192
+    private const val PROGRESS_INTERVAL_MS = 500L
 
     private val json = Json {
         ignoreUnknownKeys = true
+        isLenient = true
     }
 
     private val client by lazy { okhttp3.OkHttpClient() }
 
     suspend fun getYtDlpInfo(): BinaryInfo {
-        val release = fetchLatestRelease(YT_DLP_REPO)
-        val assetName = when (Platform.getCurrentPlatform()) {
-            is Desktop.Windows -> "yt-dlp.exe"
-            is Desktop.Linux -> "yt-dlp_linux"
-            is Desktop.MacOS -> "yt-dlp_macos"
-            else -> throw BinaryDownloadException("yt-dlp is not supported on this platform")
-        }
-        return release.toBinaryInfo(Binaries.YT_DLP, assetName)
+        val logger = thisLogger()
+        val startTime = System.currentTimeMillis()
+        val target = BinaryTarget.current()
+            ?: throw BinaryDownloadException("yt-dlp is not supported on this platform")
+        val entry = BinaryManifest.ytDlp(target)
+        val source = entry.sources.firstOrNull { it.isUsable }
+            ?: throw BinaryDownloadException("No usable yt-dlp source for target: $target")
+        val result = BinaryInfo(
+            name = Binaries.YT_DLP,
+            version = entry.version,
+            downloadUrl = source.url,
+            expectedSize = source.size,
+            sha256 = source.sha256,
+            archiveFormat = entry.archive,
+            targetFileName = entry.targetFileName,
+        )
+        logger.log(Severity.Info, "", null, "yt-dlp resolve took ${System.currentTimeMillis() - startTime} ms, version=${result.version}, size=${result.expectedSize}, sha256=${result.sha256.take(16)}...")
+        return result
     }
 
     suspend fun getFFmpegInfo(): BinaryInfo {
-        val release = fetchLatestRelease(FFMPEG_REPO)
-        val isArm64 = Arch.getCurrentArch() == Arch.Arm64
-        val assetName = when (Platform.getCurrentPlatform()) {
-            is Desktop.Windows -> if (isArm64) "ffmpeg-master-latest-winarm64-gpl.zip" else "ffmpeg-master-latest-win64-gpl.zip"
-            is Desktop.Linux -> if (isArm64) "ffmpeg-master-latest-linuxarm64-gpl.tar.xz" else "ffmpeg-master-latest-linux64-gpl.tar.xz"
-            is Desktop.MacOS -> if (isArm64) "ffmpeg-master-latest-macosarm64-gpl.tar.xz" else "ffmpeg-master-latest-macos64-gpl.tar.xz"
-            else -> throw BinaryDownloadException("ffmpeg is not supported on this platform")
+        val logger = thisLogger()
+        val startTime = System.currentTimeMillis()
+
+        // Try system ffmpeg first (tier 0)
+        val systemFfmpeg = SystemBinaries.findSystemFfmpeg()
+        if (systemFfmpeg != null) {
+            logger.log(Severity.Info, "", null, "Using system ffmpeg: ${systemFfmpeg.ffmpegPath}, ffprobe: ${systemFfmpeg.ffprobePath}")
+            return BinaryInfo(
+                name = Binaries.FFMPEG,
+                version = "system",
+                downloadUrl = "",
+                expectedSize = 0,
+                sha256 = "",
+            )
         }
-        return release.toBinaryInfo(Binaries.FFMPEG, assetName)
+
+        val target = BinaryTarget.current()
+            ?: throw BinaryDownloadException("ffmpeg is not supported on this platform")
+
+        val entry = BinaryManifest.ffmpeg(target)
+        if (entry == null) {
+            // macOS - no bundled ffmpeg available
+            throw BinaryDownloadException(
+                "FFmpeg not available for macOS via bundled sources. " +
+                "Please install FFmpeg via Homebrew: `brew install ffmpeg`"
+            )
+        }
+
+        val source = entry.sources.firstOrNull { it.isUsable }
+            ?: throw BinaryDownloadException("No usable ffmpeg source for target: $target")
+
+        val result = BinaryInfo(
+            name = Binaries.FFMPEG,
+            version = entry.version,
+            downloadUrl = source.url,
+            expectedSize = source.size,
+            sha256 = source.sha256,
+            archiveFormat = entry.archive,
+            targetFileName = entry.targetFileName,
+        )
+        logger.log(Severity.Info, "", null, "ffmpeg resolve took ${System.currentTimeMillis() - startTime} ms, version=${result.version}, size=${result.expectedSize}, sha256=${result.sha256.take(16)}...")
+        return result
     }
 
     suspend fun downloadYtDlp(
         binDir: File,
         onProgress: (BinaryDownloadProgress) -> Unit,
     ): File {
+        val logger = thisLogger()
+        val resolveStart = System.currentTimeMillis()
         val info = getYtDlpInfo()
+        onProgress(BinaryDownloadProgress(binaryName = Binaries.YT_DLP, phase = BinaryPhase.Resolve))
+        logger.log(Severity.Info, "", null, "yt-dlp resolve took ${System.currentTimeMillis() - resolveStart} ms")
+
+        val downloadStart = System.currentTimeMillis()
+        onProgress(BinaryDownloadProgress(binaryName = Binaries.YT_DLP, phase = BinaryPhase.Download))
         val downloaded = downloadFile(
             info = info,
             destinationDir = binDir,
-            fileName = File(info.downloadUrl).name,
-            onProgress = onProgress,
+            fileName = info.targetFileName.ifBlank { File(info.downloadUrl).name },
+            onProgress = { progress ->
+                onProgress(progress.copy(phase = BinaryPhase.Download))
+            },
         )
-        if (info.expectedSize > 0 && downloaded.length() != info.expectedSize) {
-            downloaded.delete()
-            throw BinaryDownloadException("yt-dlp download is incomplete, please try again")
-        }
+        logger.log(Severity.Info, "", null, "yt-dlp download took ${System.currentTimeMillis() - downloadStart} ms, bytes=${downloaded.length()}")
+
+        val verifyStart = System.currentTimeMillis()
+        onProgress(BinaryDownloadProgress(binaryName = Binaries.YT_DLP, phase = BinaryPhase.Verify))
+        verifyChecksum(downloaded, info.sha256, "yt-dlp")
+        logger.log(Severity.Info, "", null, "yt-dlp verify took ${System.currentTimeMillis() - verifyStart} ms")
+
         val target = File(Binaries.getYtDlpPath(binDir))
         target.parentFile?.mkdirs()
         moveReplacing(downloaded, target)
         makeExecutable(target)
+        // Stamp only after the binary is in place, so an interrupted install leaves the previous
+        // stamp (or none) and is retried instead of looking up to date.
+        Binaries.writeVersionStamp(binDir, Binaries.YT_DLP, info.version)
         onProgress(
             BinaryDownloadProgress(
                 binaryName = Binaries.YT_DLP,
+                phase = BinaryPhase.Complete,
                 bytesDownloaded = target.length(),
                 totalBytes = target.length(),
                 speed = 0,
@@ -101,30 +181,100 @@ object BinaryManager {
         binDir: File,
         onProgress: (BinaryDownloadProgress) -> Unit,
     ): List<File> {
+        val logger = thisLogger()
+        val resolveStart = System.currentTimeMillis()
+        onProgress(BinaryDownloadProgress(binaryName = Binaries.FFMPEG, phase = BinaryPhase.Resolve))
         val info = getFFmpegInfo()
+        logger.log(Severity.Info, "", null, "ffmpeg resolve took ${System.currentTimeMillis() - resolveStart} ms")
+
+        // System ffmpeg - no download needed, just write marker
+        if (info.version == "system") {
+            val systemFfmpeg = SystemBinaries.findSystemFfmpeg()
+                ?: throw BinaryDownloadException("System ffmpeg disappeared during download")
+            SystemBinaries.writeMarkerFile(binDir, systemFfmpeg.ffmpegDir)
+            onProgress(
+                BinaryDownloadProgress(
+                    binaryName = Binaries.FFMPEG,
+                    phase = BinaryPhase.Complete,
+                    bytesDownloaded = 0,
+                    totalBytes = 0,
+                    speed = 0,
+                    isComplete = true,
+                )
+            )
+            return listOf(File(systemFfmpeg.ffmpegPath), File(systemFfmpeg.ffprobePath))
+        }
+
+        // Log stale partial files
+        val stalePartials = binDir.listFiles { file ->
+            file.name.endsWith(".part") || file.name.startsWith("ffmpeg-") && (file.name.endsWith(".tar.xz") || file.name.endsWith(".zip"))
+        } ?: emptyArray()
+        if (stalePartials.isNotEmpty()) {
+            logger.log(Severity.Warn, "", null, "Found ${stalePartials.size} stale partial files in binDir: ${stalePartials.map { it.name }.joinToString(", ")}")
+            stalePartials.forEach { it.delete() }
+        }
+
+        val downloadStart = System.currentTimeMillis()
+        onProgress(BinaryDownloadProgress(binaryName = Binaries.FFMPEG, phase = BinaryPhase.Download))
         val archive = downloadFile(
             info = info,
             destinationDir = binDir,
             fileName = "ffmpeg-${info.version}-${File(info.downloadUrl).name}",
-            onProgress = onProgress,
+            onProgress = { progress ->
+                onProgress(progress.copy(phase = BinaryPhase.Download))
+            },
         )
-        val archiveSize = archive.length()
+        logger.log(Severity.Info, "", null, "ffmpeg download took ${System.currentTimeMillis() - downloadStart} ms, bytes=${archive.length()}")
+
+        val verifyStart = System.currentTimeMillis()
+        onProgress(BinaryDownloadProgress(binaryName = Binaries.FFMPEG, phase = BinaryPhase.Verify))
+        verifyChecksum(archive, info.sha256, "ffmpeg")
+        logger.log(Severity.Info, "", null, "ffmpeg verify took ${System.currentTimeMillis() - verifyStart} ms")
+
+        val extractStart = System.currentTimeMillis()
+        onProgress(BinaryDownloadProgress(binaryName = Binaries.FFMPEG, phase = BinaryPhase.Extract))
+        val extracted = try {
+            extract(archive, binDir, info.archiveFormat)
+        } catch (e: Exception) {
+            // Keep the archive behind when extraction fails so it can be inspected, the next
+            // download attempt sweeps it up as a stale partial.
+            throw e
+        }
+        // A successful run must not leave a ~150MB archive sitting in the download folder.
+        archive.delete()
+        logger.log(Severity.Info, "", null, "ffmpeg extract took ${System.currentTimeMillis() - extractStart} ms, extracted=${extracted.map { it.name }.joinToString(", ")}")
+        extracted.forEach(::makeExecutable)
+        Binaries.writeVersionStamp(binDir, Binaries.FFMPEG, info.version)
         onProgress(
             BinaryDownloadProgress(
                 binaryName = Binaries.FFMPEG,
-                bytesDownloaded = archiveSize,
-                totalBytes = archiveSize,
+                phase = BinaryPhase.Complete,
+                bytesDownloaded = extracted.sumOf { it.length() },
+                totalBytes = extracted.sumOf { it.length() },
                 speed = 0,
                 isComplete = true,
             )
         )
-        val extracted = try {
-            extract(archive, binDir)
-        } finally {
-            archive.delete()
-        }
-        extracted.forEach(::makeExecutable)
         return extracted
+    }
+
+    internal fun verifyChecksum(file: File, expectedSha256: String, label: String) {
+        if (expectedSha256.isBlank() || expectedSha256.startsWith("PENDING", ignoreCase = true)) {
+            thisLogger().log(Severity.Warn, "", null, "$label: SHA-256 not available in manifest, skipping verification")
+            return
+        }
+        val digest = MessageDigest.getInstance("SHA-256")
+        file.inputStream().use { input ->
+            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+            var read: Int
+            while (input.read(buffer).also { read = it } != -1) {
+                digest.update(buffer, 0, read)
+            }
+        }
+        val actualSha256 = digest.digest().joinToString("") { "%02x".format(it) }
+        if (!actualSha256.equals(expectedSha256, ignoreCase = true)) {
+            throw BinaryDownloadException("$label checksum mismatch: expected $expectedSha256, got $actualSha256")
+        }
     }
 
     private suspend fun downloadFile(
@@ -133,12 +283,29 @@ object BinaryManager {
         fileName: String,
         onProgress: (BinaryDownloadProgress) -> Unit,
     ): File = withContext(Dispatchers.IO) {
+        val logger = thisLogger()
+        val startTime = System.currentTimeMillis()
+
         destinationDir.mkdirs()
+
+        // Always download into "<fileName>.part" and let the caller publish it under the real name
+        // only after the checksum has been verified.
+        //
+        // Writing straight to the destination had two consequences:
+        //  - an interrupted download left a truncated file under the real name, and
+        //  - for single file downloads (yt-dlp) the downloaded file and the "target" the caller
+        //    replaces were the exact same path, so the replace step deleted the only copy it had
+        //    and then failed while copying the now missing source onto itself.
+        val partFile = File(destinationDir, "$fileName.part")
+        if (partFile.exists()) {
+            logger.log(Severity.Warn, "", null, "Found stale partial download: ${partFile.name} (${partFile.length()} bytes), deleting")
+            partFile.delete()
+        }
+
         val request = okhttp3.Request.Builder()
             .url(info.downloadUrl)
             .header("User-Agent", USER_AGENT)
             .build()
-        val destinationFile = File(destinationDir, fileName)
         val response = client.newCall(request).execute()
         try {
             if (!response.isSuccessful) {
@@ -152,9 +319,12 @@ object BinaryManager {
             var lastReported = 0L
             var lastReportTime = System.currentTimeMillis()
             body.byteStream().use { input ->
-                destinationFile.outputStream().use { output ->
+                partFile.outputStream().use { output ->
                     val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                    // Checked every buffer so a cancel actually stops a large download instead of
+                    // running to completion; this is just a job state check, so it is cheap.
                     while (true) {
+                        currentCoroutineContext().ensureActive()
                         val read = input.read(buffer)
                         if (read == -1) break
                         output.write(buffer, 0, read)
@@ -186,24 +356,32 @@ object BinaryManager {
                     isComplete = true,
                 )
             )
-            destinationFile
+            logger.log(Severity.Info, "", null, "${info.name} download took ${System.currentTimeMillis() - startTime} ms, bytes=$downloaded")
+            partFile
         } catch (e: Exception) {
-            destinationFile.delete()
+            partFile.delete()
             throw e
         } finally {
             response.close()
         }
     }
 
-    private fun extract(archive: File, binDir: File): List<File> {
-        return when {
-            archive.name.endsWith(".zip") -> extractZip(archive, binDir)
-            archive.name.endsWith(".tar.xz") || archive.name.endsWith(".txz") -> extractTar(archive, binDir)
-            else -> throw BinaryDownloadException("Unsupported archive format: ${archive.name}")
-        }
+    /**
+ * Dispatches on the format the manifest declared instead of sniffing the file name: the archive is
+ * still a ".part" file at this point, so its name no longer ends in a usable extension.
+ */
+private fun extract(archive: File, binDir: File, format: ArchiveFormat): List<File> {
+    return when (format) {
+        ArchiveFormat.Zip -> extractZip(archive, binDir)
+        ArchiveFormat.TarXz -> extractTar(archive, binDir)
+        ArchiveFormat.None ->
+            throw BinaryDownloadException("Expected ${archive.name} to be an archive, but it is not")
     }
+}
 
     private fun extractZip(archive: File, binDir: File): List<File> {
+        val logger = thisLogger()
+        val startTime = System.currentTimeMillis()
         val extracted = mutableListOf<File>()
         ZipFile(archive).use { zip ->
             val entries = zip.entries()
@@ -221,13 +399,17 @@ object BinaryManager {
         if (extracted.isEmpty()) {
             throw BinaryDownloadException("No FFmpeg binary was found inside ${archive.name}")
         }
+        logger.log(Severity.Info, "", null, "zip extract took ${System.currentTimeMillis() - startTime} ms, extracted=${extracted.map { it.name }.joinToString(", ")}")
         return extracted
     }
 
-    private fun extractTar(archive: File, binDir: File): List<File> {
+    internal fun extractTar(archive: File, binDir: File): List<File> {
+        val logger = thisLogger()
+        val startTime = System.currentTimeMillis()
+        requireExtractionTools(ArchiveFormat.TarXz)
         val workDir = File(binDir, ".ffmpeg-extract-${System.nanoTime()}")
         workDir.mkdirs()
-        val process = ProcessBuilder("tar", "-xf", archive.absolutePath, "-C", workDir.absolutePath)
+        val process = ProcessBuilder("tar", "-I", "xz -T0", "-xf", archive.absolutePath, "-C", workDir.absolutePath)
             .withoutJPackageEnvVariable()
             .redirectErrorStream(true)
             .start()
@@ -243,7 +425,6 @@ object BinaryManager {
         }
         val extracted = mutableListOf<File>()
         try {
-            // builds like BtbN nest the executables in a versioned folder, so they are searched recursively
             workDir.walkTopDown().filter { it.isFile && isBinaryName(it.name) }.forEach { source ->
                 val outFile = File(binDir, source.name)
                 moveReplacing(source, outFile)
@@ -255,10 +436,23 @@ object BinaryManager {
         if (extracted.isEmpty()) {
             throw BinaryDownloadException("No FFmpeg binary was found inside ${archive.name}")
         }
+        logger.log(Severity.Info, "", null, "tar extract took ${System.currentTimeMillis() - startTime} ms, extracted=${extracted.map { it.name }.joinToString(", ")}")
         return extracted
     }
 
-    private fun moveReplacing(source: File, target: File) {
+    internal fun moveReplacing(source: File, target: File) {
+        // Replacing a file with itself deletes the only copy before it can be moved, which loses the
+        // download entirely. Callers download into a ".part" file precisely so this cannot happen,
+        // but bail out loudly here rather than silently destroying data if one ever is.
+        if (source.absoluteFile == target.absoluteFile) {
+            thisLogger().log(
+                Severity.Warn,
+                "",
+                null,
+                "moveReplacing called with identical source and target (${target.name}), skipping",
+            )
+            return
+        }
         target.parentFile?.mkdirs()
         if (target.exists() && !target.delete()) {
             source.delete()
@@ -270,10 +464,38 @@ object BinaryManager {
         }
     }
 
-    private fun isBinaryName(name: String): Boolean {
+    /**
+ * Fails early with a clear message when the external tools needed to unpack an archive are absent.
+ *
+ * Extracting tar.xz shells out to `tar -I "xz -T0"`. Without this check a machine missing `xz` only
+ * finds out after downloading ~40MB, and the resulting tar error reads like a corrupt download
+ * rather than a missing dependency.
+ */
+internal fun requireExtractionTools(
+        format: ArchiveFormat,
+        pathDirs: List<String> = (System.getenv("PATH") ?: "")
+            .split(File.pathSeparatorChar)
+            .filter { it.isNotBlank() },
+    ) {
+        val tools = when (format) {
+            ArchiveFormat.TarXz -> listOf("tar", "xz")
+            // zip is unpacked in process, nothing external is needed.
+            ArchiveFormat.Zip, ArchiveFormat.None -> emptyList()
+        }
+        val missing = tools.filter { tool ->
+            pathDirs.none { dir -> File(dir, tool).canExecute() }
+        }
+        if (missing.isNotEmpty()) {
+            throw BinaryDownloadException(
+                "Cannot unpack the downloaded archive, ${missing.joinToString(" and ")} " +
+                    "${if (missing.size > 1) "were" else "was"} not found in PATH"
+            )
+        }
+    }
+
+private fun isBinaryName(name: String): Boolean {
         val baseName = name.substringBeforeLast('.', name)
         if (baseName != Binaries.FFMPEG && baseName != Binaries.FFPROBE) return false
-        // the archives also ship man pages (ffmpeg.1) and docs (ffmpeg.html), those are not binaries
         val extension = name.substringAfterLast('.', "")
         return extension.isEmpty() || extension.equals("exe", ignoreCase = true)
     }
@@ -283,49 +505,4 @@ object BinaryManager {
             file.setExecutable(true, false)
         }
     }
-
-    private fun GitHubRelease.toBinaryInfo(binaryName: String, assetName: String): BinaryInfo {
-        val asset = assets.firstOrNull { it.name == assetName }
-            ?: throw BinaryDownloadException("Could not find $assetName in the latest $binaryName release")
-        return BinaryInfo(
-            name = binaryName,
-            version = tagName,
-            downloadUrl = asset.browserDownloadUrl,
-            expectedSize = asset.size,
-        )
-    }
-
-    private suspend fun fetchLatestRelease(repo: String): GitHubRelease = withContext(Dispatchers.IO) {
-        val request = okhttp3.Request.Builder()
-            .url("https://api.github.com/repos/$repo/releases/latest")
-            .header("User-Agent", USER_AGENT)
-            .build()
-        client.newCall(request).execute().use { response ->
-            val body = response.body.string()
-            if (!response.isSuccessful) {
-                throw BinaryDownloadException(
-                    "Failed to query $repo: ${response.code} ${response.message}"
-                )
-            }
-            json.decodeFromString<GitHubRelease>(body)
-        }
-    }
-
-
-    private fun Desktop.isArm64(): Boolean = Arch.getCurrentArch() == Arch.Arm64
-
-    @Serializable
-    private data class GitHubRelease(
-        @SerialName("tag_name") val tagName: String,
-        val assets: List<GitHubAsset> = emptyList(),
-    )
-
-    @Serializable
-    private data class GitHubAsset(
-        val name: String,
-        @SerialName("browser_download_url") val browserDownloadUrl: String,
-        val size: Long = -1,
-    )
-
-    private const val PROGRESS_INTERVAL_MS = 500L
 }
