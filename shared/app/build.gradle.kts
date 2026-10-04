@@ -167,6 +167,18 @@ buildConfig {
             "chrome-extension://bbobopahenonfdgjgaleledndnnfhooj/"
         }
     )
+    // Extra origins allowed to talk to the native messaging host, comma separated.
+    // The Web Store extension has a fixed id, but an unpacked extension loaded from
+    // disk has no "key" in its manifest, so Chromium derives the id from the absolute
+    // folder path and it changes whenever the folder moves. Without this, Chromium
+    // silently refuses to launch the host for a locally built extension.
+    // Set it in ~/.gradle/gradle.properties (machine-local), not in the repo.
+    buildConfigField(
+        "INTEGRATION_CHROME_EXTENSION_EXTRA_ORIGINS",
+        provider {
+            providers.gradleProperty("chromeExtensionExtraOrigins").getOrElse("")
+        }
+    )
     buildConfigField(
         "TELEGRAM_GROUP",
         provider {

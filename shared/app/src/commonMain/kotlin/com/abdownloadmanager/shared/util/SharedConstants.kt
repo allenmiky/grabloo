@@ -34,4 +34,12 @@ object SharedConstants : BaseConstants {
     override val telegramGroupUrl: String = BuildConfig.TELEGRAM_GROUP
     override val firefoxExtensionId: String = BuildConfig.INTEGRATION_FIREFOX_EXTENSION_ID
     override val chromeExtensionOrigin: String = BuildConfig.INTEGRATION_CHROME_EXTENSION_ID
+    override val chromeExtensionOrigins: List<String> = listOfNotNull(
+        chromeExtensionOrigin,
+        BuildConfig.INTEGRATION_CHROME_EXTENSION_EXTRA_ORIGINS
+            .split(",")
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .firstOrNull()
+    )
 }

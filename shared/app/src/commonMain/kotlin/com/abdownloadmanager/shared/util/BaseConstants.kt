@@ -16,4 +16,5 @@ interface BaseConstants {
     val telegramChannelUrl: String
     val firefoxExtensionId: String
     val chromeExtensionOrigin: String
+    val chromeExtensionOrigins: List<String>
 }

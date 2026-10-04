@@ -92,9 +92,7 @@ class NativeMessaging(
             description = AppInfo.displayName,
             path = execFile,
             type = "stdio",
-            allowedOrigins = listOf(
-                SharedConstants.chromeExtensionOrigin
-            )
+            allowedOrigins = SharedConstants.chromeExtensionOrigins
         )
     }
 
