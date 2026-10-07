@@ -65,7 +65,7 @@ jobs:
       - name: Build package for current OS using gradle
         shell: bash
         run: |
-          ./gradlew createReleaseFolderForCi
+          ./gradlew --no-configuration-cache createReleaseFolderForCi
 
       - name: Release Gradle to unlock cache files
         shell: bash
