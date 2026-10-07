@@ -11,6 +11,7 @@ permissions:
 jobs:
   create-packages:
     strategy:
+      fail-fast: false
       matrix:
         os: [ "ubuntu-latest", "ubuntu-24.04-arm", "windows-2022", "windows-11-arm", "macos-15-intel", "macos-15" ]
     runs-on: ${{ matrix.os }}
@@ -37,14 +38,14 @@ jobs:
           key: ${{ matrix.os }}-gradle
           enableCrossOsArchive: true
 
-      - name: Skip Android build (build android only on Ubuntu)
-        if: matrix.os != 'ubuntu-latest' && matrix.os != 'ubuntu-24.04-arm'
+      - name: Skip Android build (disabled for all runners)
+        if: true
         shell: "bash"
         run: |
           echo "SKIP_ANDROID_BUILD=true" >> $GITHUB_ENV
 
       - name: Use Android Secrets
-        if: matrix.os == 'ubuntu-latest'
+        if: false
         run: |
           echo "ABDM_KEYSTORE_FILE=${{ secrets.ABDM_KEYSTORE_FILE }}" >> $GITHUB_ENV
           echo "ABDM_KEYSTORE_FILE_PASSWORD=${{ secrets.ABDM_KEYSTORE_FILE_PASSWORD }}" >> $GITHUB_ENV
