@@ -108,6 +108,7 @@ jobs:
             release/binaries/*
           body_path: release/release-notes.md
       - name: "Remove artifacts to free space"
+        if: github.event_name != 'workflow_dispatch'
         uses: geekyeggo/delete-artifact@v5
         with:
           name: app-*
