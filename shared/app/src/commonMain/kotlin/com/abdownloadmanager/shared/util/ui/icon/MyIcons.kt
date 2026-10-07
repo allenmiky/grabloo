@@ -29,6 +29,11 @@ object MyIcons : BaseMyColors() {
     override val windowMaximize = ABDMIcons.WindowMaximize.asIconSource("windowMaximize")
     override val windowClose = ABDMIcons.WindowClose.asIconSource("windowClose")
 
+    override val windowButtonMinimize = ABDMIcons.SumacWindowMinimize.asIconSource("windowButtonMinimize")
+    override val windowButtonMaximize = ABDMIcons.SumacWindowMaximize.asIconSource("windowButtonMaximize")
+    override val windowButtonRestore = ABDMIcons.SumacWindowRestore.asIconSource("windowButtonRestore")
+    override val windowButtonClose = ABDMIcons.SumacWindowClose.asIconSource("windowButtonClose")
+
     override val exit = ABDMIcons.Exit.asIconSource("exit")
     override val edit = ABDMIcons.Edit.asIconSource("edit")
     override val undo = ABDMIcons.Undo.asIconSource("undo")

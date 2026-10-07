@@ -18,6 +18,14 @@ interface IMyIcons {
     val windowFloating: IconSource
     val windowMaximize: IconSource
     val windowClose: IconSource
+
+    // Titlebar glyphs transcribed from the "Sumac Night Molten Glass Blur" window decoration SVGs.
+    // Kept separate from the ones above because those are also used as plain "clear" icons in the
+    // proxy/dns rows, where the full bleed artwork is what we want.
+    val windowButtonMinimize: IconSource
+    val windowButtonMaximize: IconSource
+    val windowButtonRestore: IconSource
+    val windowButtonClose: IconSource
     val exit: IconSource
     val edit: IconSource
     val undo: IconSource

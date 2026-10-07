@@ -21,12 +21,32 @@ import com.abdownloadmanager.desktop.window.custom.WindowToggleMaximizeTooltip
 import com.abdownloadmanager.desktop.window.custom.isWindowFocused
 import com.abdownloadmanager.desktop.window.custom.isWindowMaximized
 import com.abdownloadmanager.desktop.window.custom.titlebar.SystemButtonType
+import com.abdownloadmanager.resources.icons.SumacButtonGlyph
 import com.abdownloadmanager.shared.util.darker
 import com.abdownloadmanager.shared.util.div
 import com.abdownloadmanager.shared.util.ui.icon.MyIcons
 import com.abdownloadmanager.shared.util.ui.myColors
 import com.abdownloadmanager.shared.util.ui.widget.MyIcon
 import ir.amirab.util.compose.IconSource
+
+// Traffic light colours taken from the "Sumac Night Molten Glass" window decoration SVGs
+// (close.svg, minimize.svg, maximize.svg). Each button pairs the artwork's bright fill with the
+// darker variant it uses for the glyph, so the glyph stays readable once it appears.
+private val TrafficRed = Color(0xFFFD585F)
+private val TrafficRedGlyph = Color(0xFF7D0008)
+private val TrafficYellow = Color(0xFFFEBE30)
+private val TrafficYellowGlyph = Color(0xFFB2710F)
+private val TrafficGreen = Color(0xFF48D151)
+private val TrafficGreenGlyph = Color(0xFF0F7901)
+
+/** Diameter of the coloured dot. */
+private val TrafficLightSize = 12.dp
+
+/**
+ * The glyphs are laid out on a 16 unit box that also contains the 13.7 unit circle of the source
+ * artwork, so drawing the box at [TrafficLightSize] / (13.7/16) keeps the two in proportion.
+ */
+private val TrafficLightGlyphSize = SumacButtonGlyph.BoxSizeForCircle(TrafficLightSize.value).dp
 
 @Composable
 internal fun MacOSSystemButtons(
@@ -70,8 +90,9 @@ private fun MinimizeButton(onRequestMinimize: (() -> Unit)?, isUserInThisArea: B
             SystemButton(
                 onClick = onRequestMinimize,
                 modifier = Modifier,
-                hoveredBackgroundColor = Color(0xFFFFBD2E),
-                icon = MyIcons.windowMinimize,
+                backgroundColor = TrafficYellow,
+                glyphColor = TrafficYellowGlyph,
+                icon = MyIcons.windowButtonMinimize,
                 isUserInThisArea = isUserInThisArea,
             )
         }
@@ -85,11 +106,12 @@ private fun ToggleMaximizeButton(onToggleMaximize: (() -> Unit)?, isUserInThisAr
             SystemButton(
                 onClick = onToggleMaximize,
                 modifier = Modifier,
-                hoveredBackgroundColor = Color(0xFF28C840),
+                backgroundColor = TrafficGreen,
+                glyphColor = TrafficGreenGlyph,
                 icon = if (isWindowMaximized()) {
-                    MyIcons.windowFloating
+                    MyIcons.windowButtonRestore
                 } else {
-                    MyIcons.windowMaximize
+                    MyIcons.windowButtonMaximize
                 },
                 isUserInThisArea = isUserInThisArea,
             )
@@ -103,8 +125,9 @@ private fun CloseButton(onRequestClose: () -> Unit, isUserInThisArea: Boolean) {
         SystemButton(
             onRequestClose,
             modifier = Modifier,
-            hoveredBackgroundColor = Color(0xFFFF5F57),
-            icon = MyIcons.windowClose,
+            backgroundColor = TrafficRed,
+            glyphColor = TrafficRedGlyph,
+            icon = MyIcons.windowButtonClose,
             isUserInThisArea = isUserInThisArea,
         )
     }
@@ -113,7 +136,8 @@ private fun CloseButton(onRequestClose: () -> Unit, isUserInThisArea: Boolean) {
 @Composable
 private fun SystemButton(
     onClick: () -> Unit,
-    hoveredBackgroundColor: Color,
+    backgroundColor: Color,
+    glyphColor: Color,
     unfocusedBackgroundColor: Color = myColors.onBackground / 0.2f,
     icon: IconSource,
     isUserInThisArea: Boolean,
@@ -133,23 +157,26 @@ private fun SystemButton(
                 animateColorAsState(
                     when {
                         !isWindowFocused -> unfocusedBackgroundColor
-                        isHovered -> hoveredBackgroundColor.darker()
-                        else -> hoveredBackgroundColor
+                        isHovered -> backgroundColor.darker()
+                        else -> backgroundColor
                     }
                 ).value,
                 CircleShape
             )
-            .requiredSize(12.dp)
+            .requiredSize(TrafficLightSize)
     ) {
         if (
             isUserInThisArea && isWindowFocused
         ) {
             MyIcon(
                 icon = icon,
-                tint = Color.Black,
+                tint = glyphColor,
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .size(5.dp),
+                    // The source SVGs draw each glyph on a 16x16 box holding a circle of radius
+                    // 6.85, so the circle is 13.7/16 of the box. Scaling to our 12dp circle means
+                    // drawing the 16 unit box at 12dp / (13.7/16) = 14dp.
+                    .size(TrafficLightGlyphSize),
                 contentDescription = null,
             )
         }

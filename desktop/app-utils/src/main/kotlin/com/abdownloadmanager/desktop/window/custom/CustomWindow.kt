@@ -38,6 +38,7 @@ import com.abdownloadmanager.shared.util.PopUpContainer
 import com.abdownloadmanager.shared.util.ResponsiveBox
 import com.abdownloadmanager.shared.util.ui.WithTitleBarDirection
 import com.abdownloadmanager.shared.util.ui.icon.MyIcons
+import com.abdownloadmanager.shared.ui.theme.usesRoundedWindowFrame
 import com.abdownloadmanager.shared.util.ui.myColors
 import com.abdownloadmanager.shared.util.ui.theme.LocalUiScale
 import com.abdownloadmanager.shared.util.ui.theme.UiScaledContent
@@ -69,14 +70,20 @@ private fun FrameWindowScope.CustomWindowFrame(
     background: Color,
     onBackground: Color,
     isLight: Boolean,
+    roundedFrame: Boolean,
     start: (@Composable () -> Unit)?,
     end: (@Composable () -> Unit)?,
     content: @Composable () -> Unit,
 ) {
 //    val borderColor = MaterialTheme.colors.surface
     WithContentColor(onBackground) {
-        val windowShape = if (isWindowFloating()) androidx.compose.foundation.shape.RoundedCornerShape(5.dp) else RectangleShape
-        val frameModifier = if (isWindowFloating()) {
+        val useRoundedFrame = roundedFrame && isWindowFloating()
+        val windowShape = if (useRoundedFrame) {
+            androidx.compose.foundation.shape.RoundedCornerShape(WindowCornerRadius)
+        } else {
+            RectangleShape
+        }
+        val frameModifier = if (useRoundedFrame) {
             Modifier
                 .fillMaxSize()
                 .clip(windowShape)
@@ -386,9 +393,14 @@ fun CustomWindow(
         //we decorate window and add our custom layout
         WindowDecoration.Undecorated()
     }
+    // A clipped corner is invisible unless the native window lets the pixels through, so a rounded
+    // frame and a transparent window have to be decided together. On Windows the system already
+    // rounds the frame, so that path stays opaque.
+    val roundedFrame = !isAeroSnapSupported && myColors.usesRoundedWindowFrame()
+
     Window(
         state = state,
-        transparent = false,
+        transparent = roundedFrame,
         decoration = undecorated,
         icon = icon,
         title = title,
@@ -401,13 +413,19 @@ fun CustomWindow(
     ) {
         val isLight = myColors.isLight
         val background = myColors.background
-        LaunchedEffect(background) {
+        LaunchedEffect(background, roundedFrame) {
             withContext(Dispatchers.Main) {
                 //I set window background fix window edge flickering on window resize
-                window.background = background.takeOrElse {
-                    if (isLight) Color.White
-                    else Color.Black
-                }.toAwtColor()
+                window.background = if (roundedFrame) {
+                    // Fully transparent, otherwise the clipped corners show this colour instead of
+                    // the desktop behind the window.
+                    java.awt.Color(0, 0, 0, 0)
+                } else {
+                    background.takeOrElse {
+                        if (isLight) Color.White
+                        else Color.Black
+                    }.toAwtColor()
+                }
             }
         }
         UiScaledContent {
@@ -431,6 +449,7 @@ fun CustomWindow(
                     background = background,
                     onBackground = myColors.onBackground,
                     isLight = isLight,
+                    roundedFrame = roundedFrame,
                     start = start,
                     end = end,
                 ) {
