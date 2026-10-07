@@ -38,7 +38,7 @@ jobs:
           enableCrossOsArchive: true
 
       - name: Skip Android build (build android only on Ubuntu)
-        if: matrix.os != 'ubuntu-latest'
+        if: matrix.os != 'ubuntu-latest' && matrix.os != 'ubuntu-24.04-arm'
         shell: "bash"
         run: |
           echo "SKIP_ANDROID_BUILD=true" >> $GITHUB_ENV
