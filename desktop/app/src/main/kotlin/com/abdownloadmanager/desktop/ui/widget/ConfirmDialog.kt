@@ -122,11 +122,14 @@ fun ConfirmDialog(
                     ActionButton(
                         myStringResource(Res.string.ok),
                         onClick = onConfirm,
-                        modifier = Modifier.focusRequester(confirmFocusRequester)
+                        modifier = Modifier
+                            .defaultMinSize(minWidth = 76.dp)
+                            .focusRequester(confirmFocusRequester)
                     )
                     Spacer(Modifier.width(8.dp))
                     ActionButton(
                         myStringResource(Res.string.cancel),
+                        modifier = Modifier.defaultMinSize(minWidth = 76.dp),
                         onClick = onCancel
                     )
                 }

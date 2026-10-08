@@ -26,6 +26,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -480,12 +481,18 @@ private fun ShowDeletePrompts(
                     confirmFocusRequester.requestFocus()
                 }
                 Spacer(Modifier.weight(1f))
-                ActionButton(text = myStringResource(Res.string.cancel), onClick = onCancel)
+                ActionButton(
+                    text = myStringResource(Res.string.cancel),
+                    modifier = Modifier.defaultMinSize(minWidth = 76.dp),
+                    onClick = onCancel
+                )
                 Spacer(Modifier.width(8.dp))
                 DangerActionButton(
                     text = myStringResource(Res.string.delete),
                     onClick = onConfirm,
-                    modifier = Modifier.focusRequester(confirmFocusRequester)
+                    modifier = Modifier
+                        .defaultMinSize(minWidth = 76.dp)
+                        .focusRequester(confirmFocusRequester)
                 )
             }
         }
@@ -533,13 +540,16 @@ private fun ShowConfirmPrompt(
                 Spacer(Modifier.weight(1f))
                 ActionButton(
                     text = myStringResource(Res.string.cancel),
+                    modifier = Modifier.defaultMinSize(minWidth = 76.dp),
                     onClick = onCancel,
                 )
                 Spacer(Modifier.width(8.dp))
                 PrimaryMainActionButton(
                     text = myStringResource(Res.string.ok),
+                    modifier = Modifier
+                        .defaultMinSize(minWidth = 76.dp)
+                        .focusRequester(confirmFocusRequester),
                     onClick = onConfirm,
-                    modifier = Modifier.focusRequester(confirmFocusRequester)
                 )
             }
         }
@@ -580,7 +590,7 @@ private fun ShowDeleteCategoryPrompt(
                     Res.string.confirm_delete_category_item_description,
                     Res.string.confirm_delete_category_item_description_createArgs(
                         value = deletePromptState.category.name
-                    )
+                    ),
                 ),
                 fontSize = myTextSizes.base,
                 color = myColors.dimText,
@@ -603,13 +613,16 @@ private fun ShowDeleteCategoryPrompt(
                 Spacer(Modifier.weight(1f))
                 ActionButton(
                     text = myStringResource(Res.string.cancel),
+                    modifier = Modifier.defaultMinSize(minWidth = 76.dp),
                     onClick = onCancel,
                 )
                 Spacer(Modifier.width(8.dp))
                 DangerActionButton(
                     text = myStringResource(Res.string.delete),
                     onClick = onConfirm,
-                    modifier = Modifier.focusRequester(confirmFocusRequester),
+                    modifier = Modifier
+                        .defaultMinSize(minWidth = 76.dp)
+                        .focusRequester(confirmFocusRequester),
                 )
             }
         }
@@ -695,7 +708,7 @@ private fun IdmToolbar(component: HomeComponent) {
         Modifier
             .fillMaxWidth()
             .background(myColors.toolbar)
-            .padding(horizontal = 8.dp, vertical = 3.dp),
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -714,7 +727,7 @@ private fun IdmToolbar(component: HomeComponent) {
         Spacer(Modifier.weight(1f))
         HomeSearch(
             component = component,
-            modifier = Modifier.height(24.dp)
+            modifier = Modifier.height(26.dp)
         )
     }
 }
@@ -730,7 +743,7 @@ private fun PrimaryToolbarButton(
     Tooltip(title.asStringSource()) {
         Row(
             Modifier
-                .height(24.dp)
+                .height(26.dp)
                 .clip(RoundedCornerShape(5.dp))
                 .background(if (isHovered) myColors.primaryVariant else myColors.primary)
                 .clickable(
@@ -738,18 +751,20 @@ private fun PrimaryToolbarButton(
                     indication = null,
                     onClick = onClick
                 )
-                .padding(horizontal = 9.dp),
+                .padding(horizontal = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            horizontalArrangement = Arrangement.Center,
         ) {
             WithContentColor(myColors.onPrimary) {
                 MyIcon(icon, null, Modifier.size(13.dp))
+                Spacer(Modifier.width(5.dp))
                 Text(
                     text = title,
                     maxLines = 1,
-                    fontSize = 11.sp,
+                    fontSize = 11.5.sp,
                     color = myColors.onPrimary,
                     fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center,
                 )
             }
         }
@@ -767,7 +782,7 @@ private fun ToolbarAction(action: AnAction, customTitle: String? = null) {
     Tooltip(displayTitle.asStringSource()) {
         Row(
             Modifier
-                .height(24.dp)
+                .height(26.dp)
                 .clip(RoundedCornerShape(5.dp))
                 .background(
                     if (isHovered && enabled) {
@@ -782,17 +797,21 @@ private fun ToolbarAction(action: AnAction, customTitle: String? = null) {
                     indication = null,
                 ) { action() }
                 .ifThen(!enabled) { alpha(0.4f) }
-                .padding(horizontal = 9.dp),
+                .padding(horizontal = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            horizontalArrangement = Arrangement.Center,
         ) {
             WithContentAlpha(1f) {
-                icon?.let { MyIcon(it, null, Modifier.size(13.dp)) }
+                icon?.let {
+                    MyIcon(it, null, Modifier.size(13.dp))
+                    Spacer(Modifier.width(5.dp))
+                }
                 Text(
                     text = displayTitle,
                     maxLines = 1,
-                    fontSize = 11.sp,
+                    fontSize = 11.5.sp,
                     color = myColors.onBackground,
+                    textAlign = TextAlign.Center,
                 )
             }
         }

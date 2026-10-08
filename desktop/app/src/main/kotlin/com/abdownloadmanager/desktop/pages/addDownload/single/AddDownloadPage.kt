@@ -137,6 +137,7 @@ fun AddDownloadPage(
             ) {
                 ActionButton(
                     text = myStringResource(Res.string.paste),
+                    modifier = Modifier.defaultMinSize(minWidth = 64.dp),
                     onClick = {
                         setLink(
                             ClipboardUtil.read()
@@ -538,7 +539,7 @@ private fun MainActionButtons(component: BaseAddSingleDownloadComponent) {
             val canAddToDownloads by component.canAddToDownloads.collectAsState()
             ActionButton(
                 text = myStringResource(Res.string.add),
-                modifier = Modifier,
+                modifier = Modifier.defaultMinSize(minWidth = 80.dp),
                 enabled = canAddToDownloads,
                 onClick = {
                     component.selectQueueComponent.onConfirm()
@@ -548,30 +549,30 @@ private fun MainActionButtons(component: BaseAddSingleDownloadComponent) {
                 }
 
             )
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(10.dp))
             PrimaryMainActionButton(
                 text = myStringResource(Res.string.download),
-                modifier = Modifier,
+                modifier = Modifier.defaultMinSize(minWidth = 92.dp),
                 enabled = canAddToDownloads,
                 onClick = {
                     component.onRequestDownload()
                 },
             )
             if (onDuplicateStrategy != null) {
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(10.dp))
                 ActionButton(
                     text = myStringResource(Res.string.change_solution),
-                    modifier = Modifier,
+                    modifier = Modifier.defaultMinSize(minWidth = 80.dp),
                     onClick = { component.showSolutionsOnDuplicateDownloadUi = true },
                 )
             }
 
         }
-        Spacer(Modifier.width(8.dp))
+        Spacer(Modifier.width(10.dp))
 
         ActionButton(
             text = myStringResource(Res.string.cancel),
-            modifier = Modifier,
+            modifier = Modifier.defaultMinSize(minWidth = 80.dp),
             onClick = {
                 component.onRequestClose()
             },
@@ -876,6 +877,7 @@ private fun QueueSelect(component: BaseAddSingleDownloadComponent) {
         ActionButton(
             text = queues.firstOrNull { it.id == selectedQueueId }?.getQueueModel()?.name
                 ?: myStringResource(Res.string.default),
+            modifier = Modifier.defaultMinSize(minWidth = 64.dp),
             onClick = { open = true },
         )
     }

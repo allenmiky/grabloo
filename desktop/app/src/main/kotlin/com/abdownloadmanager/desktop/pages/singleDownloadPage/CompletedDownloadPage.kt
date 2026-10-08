@@ -86,7 +86,7 @@ private fun Actions(
         ) {
             ActionButton(
                 myStringResource(Res.string.open),
-                modifier = Modifier,
+                modifier = Modifier.defaultMinSize(minWidth = 76.dp),
                 onClick = {
                     component.openFile()
                 },
@@ -94,7 +94,7 @@ private fun Actions(
             Spacer(Modifier.width(8.dp))
             ActionButton(
                 myStringResource(Res.string.open_folder),
-                modifier = Modifier,
+                modifier = Modifier.defaultMinSize(minWidth = 76.dp),
                 onClick = {
                     component.openFolder()
                 },
@@ -139,7 +139,7 @@ private fun Actions(
             Spacer(Modifier.weight(1f))
             ActionButton(
                 myStringResource(Res.string.close),
-                modifier = Modifier,
+                modifier = Modifier.defaultMinSize(minWidth = 76.dp),
                 onClick = component::close,
             )
         }

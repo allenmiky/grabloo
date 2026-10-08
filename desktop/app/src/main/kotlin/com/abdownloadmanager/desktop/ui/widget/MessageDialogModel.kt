@@ -119,6 +119,7 @@ fun MessageDialog(
                 ) {
                     ActionButton(
                         myStringResource(Res.string.ok),
+                        modifier = Modifier.defaultMinSize(minWidth = 76.dp),
                         onClick = onConfirm
                     )
                 }

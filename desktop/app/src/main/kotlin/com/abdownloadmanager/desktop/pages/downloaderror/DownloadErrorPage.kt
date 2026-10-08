@@ -151,11 +151,13 @@ private fun DownloadErrorDialog(
                 ) {
                     ActionButton(
                         text = myStringResource(Res.string.copy),
+                        modifier = Modifier.defaultMinSize(minWidth = 76.dp),
                         onClick = onRequestCopyToClipboard,
                     )
                     Spacer(Modifier.width(8.dp))
                     ActionButton(
                         text = myStringResource(Res.string.ok),
+                        modifier = Modifier.defaultMinSize(minWidth = 76.dp),
                         onClick = onClose,
                     )
                 }

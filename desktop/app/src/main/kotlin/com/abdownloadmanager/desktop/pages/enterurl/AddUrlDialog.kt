@@ -166,6 +166,7 @@ fun AddUrlDialog(
                     ) {
                         ActionButton(
                             text = myStringResource(Res.string.paste),
+                            modifier = Modifier.defaultMinSize(minWidth = 64.dp),
                             onClick = {
                                 component.setLinks(
                                     ClipboardUtil.read()
@@ -229,12 +230,13 @@ fun AddUrlDialog(
                     ) {
                         ActionButton(
                             text = myStringResource(Res.string.cancel),
+                            modifier = Modifier.defaultMinSize(minWidth = 76.dp),
                             onClick = onDismiss,
                         )
                         Spacer(Modifier.width(8.dp))
                         PrimaryMainActionButton(
                             text = myStringResource(Res.string.add),
-                            modifier = Modifier,
+                            modifier = Modifier.defaultMinSize(minWidth = 76.dp),
                             enabled = component.canAdd.collectAsState().value,
                             onClick = {
                                 component.onAdd()

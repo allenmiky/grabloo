@@ -369,7 +369,7 @@ private fun MainActionButtons(
             }
             PrimaryMainActionButton(
                 text = myStringResource(Res.string.change),
-                modifier = Modifier,
+                modifier = Modifier.defaultMinSize(minWidth = 76.dp),
                 enabled = canEdit,
                 onClick = {
                     if (warnings.isNotEmpty()) {
@@ -385,7 +385,7 @@ private fun MainActionButtons(
 
         MainConfigActionButton(
             text = myStringResource(Res.string.cancel),
-            modifier = Modifier,
+            modifier = Modifier.defaultMinSize(minWidth = 76.dp),
             onClick = {
                 component.onRequestClose()
             },

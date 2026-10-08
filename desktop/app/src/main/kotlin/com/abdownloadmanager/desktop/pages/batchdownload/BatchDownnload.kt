@@ -183,11 +183,16 @@ fun BatchDownload(
         ) {
             ActionButton(
                 text = myStringResource(Res.string.ok),
+                modifier = Modifier.defaultMinSize(minWidth = 76.dp),
                 enabled = component.canConfirm.collectAsState().value,
                 onClick = component::confirm
             )
             Spacer(Modifier.width(8.dp))
-            ActionButton(myStringResource(Res.string.close), onClick = component.onClose)
+            ActionButton(
+                myStringResource(Res.string.close),
+                modifier = Modifier.defaultMinSize(minWidth = 76.dp),
+                onClick = component.onClose
+            )
         }
     }
 }

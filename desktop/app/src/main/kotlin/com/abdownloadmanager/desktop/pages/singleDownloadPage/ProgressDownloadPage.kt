@@ -792,6 +792,7 @@ private fun SingleDownloadPageButton(
 ) {
     ActionButton(
         text = text,
+        modifier = Modifier.defaultMinSize(minWidth = 76.dp),
         start = {
             icon?.let {
                 Row {
@@ -800,7 +801,7 @@ private fun SingleDownloadPageButton(
                 }
             }
         },
-        contentPadding = PaddingValues(vertical = 6.dp, horizontal = 12.dp),
+        contentPadding = PaddingValues(vertical = 4.dp, horizontal = 12.dp),
         contentColor = color,
         onClick = onClick,
     )

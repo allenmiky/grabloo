@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -221,6 +222,7 @@ private fun Actions(
 ) {
     ActionButton(
         myStringResource(Res.string.ok),
+        modifier = Modifier.defaultMinSize(minWidth = 76.dp),
         enabled = component.canAdd.collectAsState().value,
         onClick = {
             component.newDownloadEntered()
@@ -229,6 +231,7 @@ private fun Actions(
     Spacer(Modifier.width(8.dp))
     ActionButton(
         myStringResource(Res.string.cancel),
+        modifier = Modifier.defaultMinSize(minWidth = 76.dp),
         onClick = component::close
     )
 }

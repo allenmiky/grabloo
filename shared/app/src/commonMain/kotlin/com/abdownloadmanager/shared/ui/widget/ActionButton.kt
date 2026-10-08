@@ -26,6 +26,7 @@ import com.abdownloadmanager.shared.util.ui.WithContentColor
 import com.abdownloadmanager.shared.util.ui.myColors
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.text.style.TextAlign
 import com.abdownloadmanager.shared.util.ui.theme.myTextSizes
 import ir.amirab.util.ifThen
 
@@ -43,7 +44,7 @@ fun ActionButton(
     focusedBorderColor: Brush = SolidColor(Color.Unspecified),
     disabledBorderColor: Brush = SolidColor(Color.Unspecified),
     contentColor: Color = Color.Unspecified,
-    contentPadding: PaddingValues = PaddingValues(vertical = 2.dp, horizontal = 12.dp),
+    contentPadding: PaddingValues = PaddingValues(vertical = 3.dp, horizontal = 14.dp),
     focusRingColor: Color = Color.Unspecified,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     start: (@Composable RowScope.() -> Unit)? = null,
@@ -77,8 +78,7 @@ fun ActionButton(
     val currentFocusRingColor = if (focusRingColor.isSpecified) focusRingColor else mColors.focusedBorderColor / 0.45f
     Row(
         modifier
-            .heightIn(min = 24.dp)
-            .height(24.dp)
+            .defaultMinSize(minWidth = 56.dp, minHeight = 26.dp)
             .clip(shape)
             .ifThen(isFocused) {
                 border(2.dp, currentFocusRingColor, shape)
@@ -116,6 +116,7 @@ fun ActionButton(
                     fontSize = myTextSizes.base,
                     maxLines = 1,
                     softWrap = false,
+                    textAlign = TextAlign.Center,
                 )
                 end?.let {
                     it()
