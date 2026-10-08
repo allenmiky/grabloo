@@ -160,6 +160,15 @@ object YtDlpCli {
             it.numberOrNull("filesize") ?: it.numberOrNull("filesize_approx")
         }
         val formats = root["formats"].asArray().mapNotNull { it.asFormat() }
+        val requestedFormats = root["requested_formats"].asArray().mapNotNull { it.asFormat() }
+        val rootFormat = root.asFormat()
+        val directUrl = root.textOrNull("url")
+        val directHeaders = root.headersOrEmpty("http_headers")
+        val finalRequestedFormats = when {
+            requestedFormats.isNotEmpty() -> requestedFormats
+            rootFormat != null && rootFormat.url != null -> listOf(rootFormat)
+            else -> emptyList()
+        }
         return YtDlpVideoInfo(
             title = root.textOrNull("title").orEmpty().ifBlank { link },
             duration = root.numberOrNull("duration")?.toDouble(),
@@ -171,6 +180,9 @@ object YtDlpCli {
             thumbnailUrl = root.textOrNull("thumbnail"),
             isLive = root["is_live"]?.jsonPrimitive?.booleanOrNull ?: false,
             formats = formats,
+            requestedFormats = finalRequestedFormats,
+            directUrl = directUrl,
+            httpHeaders = directHeaders,
         )
     }
 
@@ -373,10 +385,27 @@ object YtDlpCli {
         args: List<String>,
     ): JsonObject {
         val output = runToText(binaryPath, args)
-        return runCatching { json.parseToJsonElement(output).jsonObject }
-            .getOrElse {
-                throw YtDlpCommandFailedException("yt-dlp returned an unexpected output: $it")
-            }
+        parseJsonObject(output)?.let { return it }
+        // yt-dlp can surround the document with noise: a js-runtime warning when no runtime is on
+        // PATH, or a stray "null" line after the payload. Parsing only the object itself keeps
+        // such lines from failing an otherwise successful extraction.
+        parseJsonObject(extractJsonObject(output))?.let { return it }
+        val errorLine = output.lineSequence()
+            .map { it.trim() }
+            .lastOrNull { it.startsWith("ERROR:", ignoreCase = true) }
+        throw YtDlpCommandFailedException(
+            errorLine?.take(300) ?: "yt-dlp returned an unexpected output",
+        )
+    }
+
+    private fun parseJsonObject(text: String): JsonObject? =
+        runCatching { json.parseToJsonElement(text).jsonObject }.getOrNull()
+
+    private fun extractJsonObject(text: String): String {
+        val start = text.indexOf('{')
+        val end = text.lastIndexOf('}')
+        if (start < 0 || end <= start) return text
+        return text.substring(start, end + 1)
     }
 
     private suspend fun runToText(
@@ -387,20 +416,33 @@ object YtDlpCli {
             .withoutJPackageEnvVariable()
             .redirectErrorStream(true)
             .start()
-        val output = process.inputStream.bufferedReader().use { it.readText() }
+        // reading the stream on this thread would block until EOF, so a hung yt-dlp would spin
+        // forever and the timeout below would never fire; drain it on its own thread instead
+        val output = StringBuilder()
+        val collector = Thread {
+            process.inputStream.bufferedReader().use { reader ->
+                reader.forEachLine { line ->
+                    synchronized(output) { output.appendLine(line) }
+                }
+            }
+        }.apply {
+            isDaemon = true
+            start()
+        }
         if (!process.waitFor(INFORMATION_TIMEOUT_MINUTES, TimeUnit.MINUTES)) {
             process.destroyForcibly()
             throw YtDlpCommandFailedException("yt-dlp did not answer in time for ${args.lastOrNull()}")
         }
         if (process.exitValue() != 0) {
+            val lines = synchronized(output) { output.toString() }
+                .lineSequence().map { it.trim() }.toList()
             throw YtDlpCommandFailedException(
-                describeFailure(
-                    output.lineSequence().map { it.trim() }.toList(),
-                    process.exitValue(),
-                )
+                describeFailure(lines, process.exitValue()),
             )
         }
-        output
+        // the process has exited, so the stream is at EOF and the collector is about to finish
+        collector.join()
+        synchronized(output) { output.toString() }
     }
 
     /**
@@ -437,7 +479,16 @@ object YtDlpCli {
             bitrate = obj.numberOrNull("tbr"),
             dynamicRange = obj.textOrNull("dynamic_range"),
             isDrm = obj["has_drm"]?.jsonPrimitive?.booleanOrNull ?: false,
+            url = obj.textOrNull("url"),
+            httpHeaders = obj.headersOrEmpty("http_headers"),
         )
+    }
+
+    private fun JsonObject.headersOrEmpty(key: String): Map<String, String> {
+        val headersObj = this[key] as? JsonObject ?: return emptyMap()
+        return headersObj.entries.associate { (k, v) ->
+            k to ((v as? JsonPrimitive)?.content.orEmpty())
+        }.filterValues { it.isNotBlank() }
     }
 
     private fun JsonObject.textOrNull(key: String): String? =
