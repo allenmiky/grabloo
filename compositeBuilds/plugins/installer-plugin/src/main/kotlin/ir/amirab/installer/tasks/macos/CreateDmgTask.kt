@@ -71,16 +71,18 @@ abstract class CreateDmgTask : DefaultTask() {
 
     init {
         dmgExecutable.convention(
-            project.provider {
-                val process = ProcessBuilder("which", "create-dmg")
-                    .redirectErrorStream(true)
-                    .start()
-                val path = process.inputStream.bufferedReader().readText().trim()
-                if (path.isBlank()) {
-                    throw GradleException("create-dmg not found in PATH. Please install it or check your PATH.")
+            project.objects.property(File::class.java).convention(
+                project.provider {
+                    val process = ProcessBuilder("which", "create-dmg")
+                        .redirectErrorStream(true)
+                        .start()
+                    val path = process.inputStream.bufferedReader().readText().trim()
+                    if (path.isBlank()) {
+                        throw GradleException("create-dmg not found in PATH. Please install it or check your PATH.")
+                    }
+                    File(path)
                 }
-                File(path)
-            }
+            )
         )
     }
 

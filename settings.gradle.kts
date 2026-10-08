@@ -35,4 +35,6 @@ include("shared:auto-start")
 includeBuild("./compositeBuilds/shared"){
     name="build-shared"
 }
-includeBuild("./compositeBuilds/plugins")
+includeBuild("./compositeBuilds/plugins"){
+    name="build-plugins"
+}
