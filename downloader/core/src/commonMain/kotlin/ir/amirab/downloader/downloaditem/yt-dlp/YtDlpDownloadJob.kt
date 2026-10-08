@@ -592,7 +592,16 @@ class YtDlpDownloadJob(
                     }
                 }
                 try {
+                    // HttpDownloadJob.resume() returns as soon as the part downloaders are
+                    // dispatched — it does NOT wait for the bytes to arrive. Waiting here for
+                    // a terminal state is what lets the caller proceed only once the stream
+                    // is really Finished (or Canceled), instead of marking a .done marker on
+                    // a download that has only just started.
                     job.resume()
+                    job.status.first {
+                        it is DownloadJobStatus.Finished ||
+                            it is DownloadJobStatus.Canceled
+                    }
                 } finally {
                     partsSync.cancel()
                     val currentParts = job.getParts()
