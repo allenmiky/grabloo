@@ -2,19 +2,23 @@ package ir.amirab.downloader.downloaditem.yt_dlp
 
 import ir.amirab.downloader.DownloadManager
 import ir.amirab.downloader.Downloader
+import ir.amirab.downloader.connection.HttpDownloaderClient
 import ir.amirab.downloader.downloaditem.DownloadJob
 import ir.amirab.downloader.downloaditem.IDownloadCredentials
 import ir.amirab.downloader.downloaditem.IDownloadItem
 import kotlinx.serialization.KSerializer
 import kotlin.reflect.KClass
 
-class YtDlpDownloader : Downloader<YtDlpDownloadItem, YtDlpDownloadJob, YtDlpDownloadCredentials> {
+class YtDlpDownloader(
+    httpDownloaderClient: Lazy<HttpDownloaderClient>? = null,
+) : Downloader<YtDlpDownloadItem, YtDlpDownloadJob, YtDlpDownloadCredentials> {
+    private val httpClient: HttpDownloaderClient? by (httpDownloaderClient ?: lazyOf(null))
 
     override fun createJob(
         item: YtDlpDownloadItem,
         downloadManager: DownloadManager,
     ): YtDlpDownloadJob {
-        return YtDlpDownloadJob(item, downloadManager)
+        return YtDlpDownloadJob(item, downloadManager, httpClient)
     }
 
     override fun accept(item: IDownloadItem): Boolean {

@@ -9,6 +9,9 @@ data class YtDlpResponseInfo(
     val fileSize: Long?,
     val isLive: Boolean,
     val formats: List<YtDlpFormat> = emptyList(),
+    val requestedFormats: List<YtDlpFormat> = emptyList(),
+    val directUrl: String? = null,
+    val httpHeaders: Map<String, String> = emptyMap(),
     val unsuccessFullThrowable: Throwable? = null,
 ) : IResponseInfo {
     override val isSuccessFul: Boolean = unsuccessFullThrowable == null
@@ -25,5 +28,8 @@ fun YtDlpVideoInfo.toResponseInfo(): YtDlpResponseInfo {
         fileSize = fileSize,
         isLive = isLive,
         formats = formats,
+        requestedFormats = requestedFormats,
+        directUrl = directUrl,
+        httpHeaders = httpHeaders,
     )
 }

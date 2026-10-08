@@ -30,8 +30,22 @@ class YtDlpLinkChecker(
     }
 
     override fun infoUpdated(responseInfo: YtDlpResponseInfo?) {
-        _suggestedName.value = responseInfo?.title?.takeIf { it.isNotBlank() }
-            ?: HttpUrlUtils.extractNameFromLink(credentials.value.link)?.let(FilenameFixer::fix)
+        val rawTitle = responseInfo?.title?.takeIf { it.isNotBlank() }
+        val fixedName = if (rawTitle != null) {
+            val fixed = FilenameFixer.fix(rawTitle)
+            val ext = responseInfo.requestedFormats.firstOrNull { it.hasVideo }?.extension
+                ?: responseInfo.formats.firstOrNull { it.hasVideo }?.extension
+                ?: "mp4"
+            val currentExt = fixed.substringAfterLast('.', "").lowercase()
+            if (currentExt in listOf("mp4", "mkv", "webm", "avi", "mov", "m4a", "mp3")) {
+                fixed
+            } else {
+                "$fixed.$ext"
+            }
+        } else {
+            HttpUrlUtils.extractNameFromLink(credentials.value.link)?.let(FilenameFixer::fix)
+        }
+        _suggestedName.value = fixedName
         _contentLength.value = responseInfo?.fileSize?.takeIf { it > 0 }
     }
 

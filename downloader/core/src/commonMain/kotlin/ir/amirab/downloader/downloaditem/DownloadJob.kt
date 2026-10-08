@@ -60,16 +60,22 @@ abstract class DownloadJob(
         }
     }
 
+    open val notifyDownloadManager: Boolean = true
+
     protected fun onDownloadResuming() {
         _status.update {
             DownloadJobStatus.Resuming
         }
-        downloadManager.onDownloadResuming(downloadItem)
+        if (notifyDownloadManager) {
+            downloadManager.onDownloadResuming(downloadItem)
+        }
     }
 
     protected fun onDownloadResumed() {
         _status.update { DownloadJobStatus.Downloading }
-        downloadManager.onDownloadResumed(downloadItem)
+        if (notifyDownloadManager) {
+            downloadManager.onDownloadResumed(downloadItem)
+        }
     }
 
     protected suspend fun onDownloadCanceled(throwable: Throwable) {
@@ -81,7 +87,9 @@ abstract class DownloadJob(
         }
         _isDownloadActive.update { false }
         saveState()
-        downloadManager.onDownloadCanceled(downloadItem, throwable)
+        if (notifyDownloadManager) {
+            downloadManager.onDownloadCanceled(downloadItem, throwable)
+        }
     }
 
     protected fun onDownloadFinished() {
@@ -100,14 +108,16 @@ abstract class DownloadJob(
             _isDownloadActive.update { false }
             onDownloadFinishedBeforeSave()
             saveState()
-            downloadManager.onDownloadFinished(downloadItem)
+            if (notifyDownloadManager) {
+                downloadManager.onDownloadFinished(downloadItem)
+            }
         }
     }
 
     open fun onDownloadFinishedBeforeSave() {}
     abstract fun getDownloadedSize(): Long
 
-    fun downloadRemoved(
+    open fun downloadRemoved(
         removeOutputFile: Boolean = true,
     ) {
         ensureBooted()

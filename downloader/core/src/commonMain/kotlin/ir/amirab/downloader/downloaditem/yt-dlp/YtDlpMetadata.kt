@@ -9,8 +9,22 @@ data class YtDlpVideoInfo(
     val thumbnailUrl: String?,
     val isLive: Boolean,
     val formats: List<YtDlpFormat> = emptyList(),
+    val requestedFormats: List<YtDlpFormat> = emptyList(),
+    val directUrl: String? = null,
+    val httpHeaders: Map<String, String> = emptyMap(),
 ) {
     fun asFileSize(): Long = fileSize?.takeIf { it > 0 } ?: IDownloadItem.LENGTH_UNKNOWN
+
+    val hasDirectMediaStreams: Boolean
+        get() = (requestedFormats.isNotEmpty() && requestedFormats.all { it.url != null && it.isProgressive })
+            || (directUrl != null)
+
+    val videoStream: YtDlpFormat?
+        get() = requestedFormats.firstOrNull { it.hasVideo }
+
+    val audioStream: YtDlpFormat?
+        get() = requestedFormats.firstOrNull { it.hasAudio && !it.hasVideo }
+            ?: requestedFormats.firstOrNull { it.hasAudio && it != videoStream }
 }
 
 data class YtDlpFormat(
@@ -28,6 +42,8 @@ data class YtDlpFormat(
     val bitrate: Long? = null,
     val dynamicRange: String? = null,
     val isDrm: Boolean = false,
+    val url: String? = null,
+    val httpHeaders: Map<String, String> = emptyMap(),
 ) {
     val hasVideo: Boolean
         get() = !videoCodec.isNullOrBlank() && videoCodec != "none"

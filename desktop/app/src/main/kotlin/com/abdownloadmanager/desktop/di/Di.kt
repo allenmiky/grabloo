@@ -248,23 +248,23 @@ val downloaderModule = module {
         HttpDownloaderInUi(get(), get())
     }
     single {
-        YtDlpDownloader()
+        YtDlpDownloader(inject())
     }
     single {
         YtDlpDownloaderInUi(get(), get(), get())
     }
     single {
         DownloaderInUiRegistry().apply {
-            add(get<HttpDownloaderInUi>())
-            add(get<HLSDownloaderInUi>())
             add(get<YtDlpDownloaderInUi>())
+            add(get<HLSDownloaderInUi>())
+            add(get<HttpDownloaderInUi>())
         }
     }.bind<DownloadItemStateFactory<IDownloadItem, DownloadJob>>()
     single {
         DownloaderRegistry().apply {
-            add(get<HttpDownloader>())
-            add(get<HLSDownloader>())
             add(get<YtDlpDownloader>())
+            add(get<HLSDownloader>())
+            add(get<HttpDownloader>())
         }
     }
     single {

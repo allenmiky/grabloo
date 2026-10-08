@@ -23,6 +23,7 @@ import ir.amirab.downloader.downloaditem.yt_dlp.YtDlpPhase
 import ir.amirab.downloader.monitor.ProcessingDownloadItemFactoryInputs
 import ir.amirab.downloader.monitor.ExplicitProgressProcessingDownloadItemState
 import ir.amirab.downloader.monitor.ProcessingDownloadItemState
+import ir.amirab.downloader.monitor.UiRangedPart
 import ir.amirab.downloader.utils.calcPercent
 import ir.amirab.util.compose.StringSource
 import ir.amirab.util.compose.asStringSource
@@ -157,9 +158,15 @@ class YtDlpDownloaderInUi(
         val job = props.downloadJob
         val item = job.downloadItem
         val progress = job.progressFlow.value
-        val downloadedBytes = progress?.downloadedBytes ?: 0L
+        val downloadedBytes = progress?.downloadedBytes ?: job.getDownloadedSize()
         val speed = progress?.speed ?: props.speed
         val contentLength = item.contentLength
+        val parts = job.getParts().map {
+            UiRangedPart.fromPart(
+                part = it,
+                totalLength = contentLength,
+            )
+        }
         return ExplicitProgressProcessingDownloadItemState(
             id = job.id,
             name = item.name,
@@ -168,7 +175,7 @@ class YtDlpDownloaderInUi(
             speed = speed,
             supportResume = true,
             contentLength = contentLength,
-            parts = emptyList(),
+            parts = parts,
             downloadLink = item.link,
             saveLocation = item.name,
             dateAdded = item.dateAdded,

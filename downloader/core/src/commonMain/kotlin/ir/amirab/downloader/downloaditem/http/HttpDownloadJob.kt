@@ -37,6 +37,7 @@ class HttpDownloadJob(
     override val downloadItem: HttpDownloadItem,
     downloadManager: DownloadManager,
     val client: HttpDownloaderClient,
+    override val notifyDownloadManager: Boolean = true,
 ) : DownloadJob(
     downloadManager = downloadManager,
 ) {
@@ -123,7 +124,9 @@ class HttpDownloadJob(
         strictDownload = true
         downloadedSizeBeforeRetry = 0 // nothing
         saveState()
-        downloadManager.onDownloadItemChange(downloadItem)
+        if (notifyDownloadManager) {
+            downloadManager.onDownloadItemChange(downloadItem)
+        }
     }
 
 
@@ -755,7 +758,9 @@ class HttpDownloadJob(
     }
 
     override suspend fun saveState() {
-        saveDownloadItem()
+        if (notifyDownloadManager) {
+            saveDownloadItem()
+        }
         saveParts()
     }
 
