@@ -78,6 +78,7 @@ jobs:
         with:
           path: ./build/ci-release
           name: app-${{ matrix.os }}
+          retention-days: 3
 
   release:
     runs-on: "ubuntu-latest"
