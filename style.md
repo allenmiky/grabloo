@@ -44,3 +44,4 @@ Extension ka source code add ho chuka hai aur uske tamam buttons, icons aur styl
 | **Main Window Black Border** | Main application window par solid black border apply karna. | 🔄 Next step |
 | **Empty State 2D Resizing** | Jab download list empty ho ya delete ho jaye to window compact 2D widget view mein resize ho. | 🔄 Next step |
 | **HTML/CSS Style Uniformity** | Desktop app ke dialogs, buttons aur hover effects ko user ke theme tokens se match karna. | 🔄 Next step |
+| **Day Mode / White Mode Theme** | Grabbo Day White theme tokens (`#F5F5F7` bg, `#FFFFFF` surfaces/panels, `#2F7BF2` primary, `#DCDFE4` dividers), smooth animated transitions aur settings wiring complete. | ✅ Done |

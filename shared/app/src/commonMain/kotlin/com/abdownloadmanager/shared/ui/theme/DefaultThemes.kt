@@ -112,15 +112,51 @@ object DefaultThemes {
         secondaryButtonBottom = Color(0xFF2B3847),
     )
 
+    val dayWhite = MyColors(
+        id = "day_white",
+        name = "Day White",
+        primary = Color(0xFF2F7BF2),
+        primaryVariant = Color(0xFF1E65D6),
+        onPrimary = Color.White,
+        secondary = Color(0xFF2F7BF2),
+        secondaryVariant = Color(0xFF1E65D6),
+        onSecondary = Color.White,
+        background = Color(0xFFF5F5F7),
+        onBackground = Color(0xFF1C1C1E),
+        surface = Color(0xFFFFFFFF),
+        onSurface = Color(0xFF1C1C1E),
+        error = Color(0xFFDC2626),
+        onError = Color.White,
+        success = Color(0xFF16A34A),
+        onSuccess = Color.White,
+        warning = Color(0xFFD97706),
+        onWarning = Color.White,
+        info = Color(0xFF2F7BF2),
+        onInfo = Color.White,
+        isLight = true,
+        panel = Color(0xFFFFFFFF),
+        sidebar = Color(0xFFEBECEF),
+        toolbar = Color(0xFFF6F6F7),
+        divider = Color(0xFFDCDFE4),
+        dimText = Color(0xFF6B7280),
+        control = Color(0xFFFFFFFF),
+        selectedRow = Color(0xFF2F7BF2),
+        selectedRowText = Color.White,
+        selectedRowDimText = Color(0xFFE0ECFF),
+        alternateRow = Color(0x06000000),
+        secondaryButtonTop = Color(0xFFFFFFFF),
+        secondaryButtonBottom = Color(0xFFF0F1F3),
+    )
 
     fun getAll(): List<MyColors> {
         return listOf(
             mojaveDark,
+            dayWhite,
             graphite,
             oceanTeal,
         )
     }
 
     fun getDefaultDark() = mojaveDark
-    fun getDefaultLight() = mojaveDark
+    fun getDefaultLight() = dayWhite
 }

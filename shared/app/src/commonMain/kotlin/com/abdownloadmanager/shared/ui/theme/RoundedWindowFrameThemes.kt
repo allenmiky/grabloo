@@ -14,6 +14,7 @@ import com.abdownloadmanager.shared.util.ui.MyColors
  */
 private val roundedWindowFrameThemeIds = setOf(
     "mojave_dark", // Mojave Dark
+    "day_white",
     "graphite",
     "ocean_teal",
 )

@@ -14,6 +14,7 @@ class RoundedWindowFrameThemesTest {
     fun everyBuiltInThemeGetsARoundedFrame() {
         listOf(
             DefaultThemes.mojaveDark,
+            DefaultThemes.dayWhite,
             DefaultThemes.graphite,
             DefaultThemes.oceanTeal,
         ).forEach { theme ->

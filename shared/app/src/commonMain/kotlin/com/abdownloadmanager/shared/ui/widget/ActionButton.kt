@@ -71,7 +71,7 @@ fun ActionButton(
         isHovered -> brushOr(hoverBackgroundColor, hoverBg)
         else -> brushOr(backgroundColor, normalBg)
     }
-    val currentBorder = brushOr(borderColor, SolidColor(mColors.contrast / 0.4f))
+    val currentBorder = brushOr(borderColor, SolidColor(if (mColors.isLight) mColors.divider else mColors.contrast / 0.4f))
     val currentFocusedBorder = brushOr(focusedBorderColor, SolidColor(mColors.focusedBorderColor))
     val currentDisabledBorder = brushOr(disabledBorderColor, currentBorder)
     val currentContentColor = if (contentColor.isSpecified) contentColor else mColors.onBackground

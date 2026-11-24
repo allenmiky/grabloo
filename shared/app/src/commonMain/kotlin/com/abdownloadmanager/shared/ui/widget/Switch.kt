@@ -34,7 +34,7 @@ fun Switch(
     val trackBrush = if (checked) {
         SolidColor(myColors.primary)
     } else {
-        SolidColor(Color(0xFF5A5A5A))
+        SolidColor(if (myColors.isLight) Color(0xFFD1D1D6) else Color(0xFF5A5A5A))
     }
     Box(
         modifier

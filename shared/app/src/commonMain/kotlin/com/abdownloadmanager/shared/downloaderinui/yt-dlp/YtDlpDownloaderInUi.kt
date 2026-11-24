@@ -167,6 +167,16 @@ class YtDlpDownloaderInUi(
                 totalLength = contentLength,
             )
         }
+        val phase = job.phaseFlow.value
+        val percent = if (contentLength <= 0) {
+            if (phase is YtDlpPhase.Resolving) {
+                job.extractingProgressFlow.value.takeIf { it > 0 }
+            } else {
+                null
+            }
+        } else {
+            calcPercent(downloadedBytes, contentLength)
+        }
         return ExplicitProgressProcessingDownloadItemState(
             id = job.id,
             name = item.name,
@@ -183,8 +193,8 @@ class YtDlpDownloaderInUi(
             completeTime = item.completeTime ?: 0,
             isWaiting = props.isWaiting,
             progress = downloadedBytes,
-            percent = if (contentLength <= 0) null else calcPercent(downloadedBytes, contentLength),
-            processStatusText = job.phaseFlow.value.toDisplayText(),
+            percent = percent,
+            processStatusText = phase.toDisplayText(),
         )
     }
 

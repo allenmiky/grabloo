@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -272,7 +273,7 @@ private fun RenderProgressBar(itemState: IDownloadItemState) {
                     .fillMaxWidth(
                         animateFloatAsState(
                             progress,
-                            tween(100, easing = LinearEasing)
+                            tween(300, easing = FastOutSlowInEasing)
                         ).value
                     )
             ) {
@@ -294,36 +295,29 @@ private fun RenderProgressBar(itemState: IDownloadItemState) {
         }
         if (progress == null && status is DownloadJobStatus.IsActive) {
             val anim = rememberInfiniteTransition()
-            val l = 2000
-            val endPos by anim.animateFloat(
-                0f,
-                1f,
-                infiniteRepeatable(tween(l), RepeatMode.Restart)
+            val shimmerAlpha by anim.animateFloat(
+                initialValue = 0.45f,
+                targetValue = 0.95f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1000, easing = FastOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse
+                )
             )
-            val width by anim.animateFloat(
-                6f, 16f, infiniteRepeatable(
-                    keyframes {
-                        durationMillis = l
-                        0f atFraction 0f
-                        0.75f atFraction 0.25f
-                        0f atFraction 1f
-                    },
-                    repeatMode = RepeatMode.Restart
+            val fillPos by anim.animateFloat(
+                initialValue = 0.25f,
+                targetValue = 0.85f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(3500, easing = LinearOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse
                 )
             )
             Box(
                 Modifier
                     .fillMaxHeight()
-                    .fillMaxWidth(endPos)
-            ) {
-                Box(
-                    Modifier
-                        .background(background)
-                        .fillMaxHeight()
-                        .align(Alignment.CenterEnd)
-                        .fillMaxWidth(width)
-                )
-            }
+                    .fillMaxWidth(fillPos)
+                    .background(background)
+                    .alpha(shimmerAlpha)
+            )
         }
     }
 }

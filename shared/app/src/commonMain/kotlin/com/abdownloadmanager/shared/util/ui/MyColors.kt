@@ -161,6 +161,18 @@ private object AnimateMyColors {
         val info by animated(toBeAnimated.info, spec)
         val onInfo by animated(toBeAnimated.onInfo, spec)
 
+        val panel by animated(toBeAnimated.panel, spec)
+        val sidebar by animated(toBeAnimated.sidebar, spec)
+        val toolbar by animated(toBeAnimated.toolbar, spec)
+        val divider by animated(toBeAnimated.divider, spec)
+        val dimText by animated(toBeAnimated.dimText, spec)
+        val control by animated(toBeAnimated.control, spec)
+        val selectedRow by animated(toBeAnimated.selectedRow, spec)
+        val selectedRowText by animated(toBeAnimated.selectedRowText, spec)
+        val selectedRowDimText by animated(toBeAnimated.selectedRowDimText, spec)
+        val alternateRow by animated(toBeAnimated.alternateRow, spec)
+        val secondaryButtonTop by animated(toBeAnimated.secondaryButtonTop, spec)
+        val secondaryButtonBottom by animated(toBeAnimated.secondaryButtonBottom, spec)
 
         val isLight = toBeAnimated.isLight
 
@@ -186,18 +198,18 @@ private object AnimateMyColors {
             isLight = isLight,
             name = toBeAnimated.name,
             id = toBeAnimated.id,
-            panel = toBeAnimated.panel,
-            sidebar = toBeAnimated.sidebar,
-            toolbar = toBeAnimated.toolbar,
-            divider = toBeAnimated.divider,
-            dimText = toBeAnimated.dimText,
-            control = toBeAnimated.control,
-            selectedRow = toBeAnimated.selectedRow,
-            selectedRowText = toBeAnimated.selectedRowText,
-            selectedRowDimText = toBeAnimated.selectedRowDimText,
-            alternateRow = toBeAnimated.alternateRow,
-            secondaryButtonTop = toBeAnimated.secondaryButtonTop,
-            secondaryButtonBottom = toBeAnimated.secondaryButtonBottom,
+            panel = panel,
+            sidebar = sidebar,
+            toolbar = toolbar,
+            divider = divider,
+            dimText = dimText,
+            control = control,
+            selectedRow = selectedRow,
+            selectedRowText = selectedRowText,
+            selectedRowDimText = selectedRowDimText,
+            alternateRow = alternateRow,
+            secondaryButtonTop = secondaryButtonTop,
+            secondaryButtonBottom = secondaryButtonBottom,
         )
     }
 

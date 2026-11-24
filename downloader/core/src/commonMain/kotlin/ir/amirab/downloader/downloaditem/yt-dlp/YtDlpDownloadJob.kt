@@ -122,6 +122,9 @@ class YtDlpDownloadJob(
     private val _phase = MutableStateFlow<YtDlpPhase>(YtDlpPhase.Starting)
     val phaseFlow = _phase.asStateFlow()
 
+    private val _extractingProgress = MutableStateFlow(0)
+    val extractingProgressFlow = _extractingProgress.asStateFlow()
+
     private var downloadedSizeBeforeRetry = 0L
     private var retryJob: Job? = null
     private val retryLock = Mutex()
@@ -293,14 +296,35 @@ class YtDlpDownloadJob(
         _phase.value = YtDlpPhase.Resolving(
             if (cached != null) "Refreshing stream info..." else "Extracting stream info..."
         )
-        val fresh = runCatching {
-            YtDlpCli.fetchVideoInfo(
-                binaryPath = Binaries.getYtDlpPath(binDir),
-                link = downloadItem.link,
-                formatSelector = downloadItem.selectedFormatId,
-                ytCookies = downloadItem.ytCookies,
+        _extractingProgress.value = 12
+        val progressTicker = (activeDownloadScope ?: scope).launch {
+            val steps = listOf(
+                25 to 250L,
+                42 to 350L,
+                60 to 450L,
+                75 to 550L,
+                85 to 700L,
+                92 to 1000L,
+                96 to 1500L,
             )
-        }.getOrNull()
+            for ((target, delayMs) in steps) {
+                delay(delayMs.milliseconds)
+                _extractingProgress.update { maxOf(it, target) }
+            }
+        }
+        val fresh = try {
+            runCatching {
+                YtDlpCli.fetchVideoInfo(
+                    binaryPath = Binaries.getYtDlpPath(binDir),
+                    link = downloadItem.link,
+                    formatSelector = downloadItem.selectedFormatId,
+                    ytCookies = downloadItem.ytCookies,
+                )
+            }.getOrNull()
+        } finally {
+            progressTicker.cancel()
+            _extractingProgress.value = 100
+        }
         if (fresh != null) {
             cachedVideoInfo = fresh
             cachedVideoInfoTime = now

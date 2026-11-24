@@ -9,7 +9,7 @@ expect object PlatformDefaultSettings : DefaultAppSettings
 abstract class DefaultAppSettings {
     open val theme: String get() = "mojave_dark"
     open val defaultDarkTheme: String get() = "mojave_dark"
-    open val defaultLightTheme: String get() = "mojave_dark"
+    open val defaultLightTheme: String get() = "day_white"
     open val language: String? get() = null
     open val font: String? get() = null
     open val uiScale: Float? get() = null

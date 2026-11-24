@@ -788,7 +788,7 @@ private fun ToolbarAction(action: AnAction, customTitle: String? = null) {
                     if (isHovered && enabled) {
                         myColors.onBackground / 0.094f
                     } else {
-                        myColors.contrast / 0.2f
+                        if (myColors.isLight) myColors.onBackground / 0.04f else myColors.contrast / 0.2f
                     }
                 )
                 .clickable(

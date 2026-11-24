@@ -87,7 +87,7 @@ private fun FrameWindowScope.CustomWindowFrame(
             Modifier
                 .fillMaxSize()
                 .clip(windowShape)
-                .border(1.dp, Color.Black, windowShape)
+                .border(1.dp, if (isLight) myColors.divider else Color.Black, windowShape)
                 .background(background)
         } else {
             Modifier
