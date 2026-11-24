@@ -6,6 +6,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.json.Json
+import java.net.BindException
 
 sealed interface IntegrationResult {
     data object Inactive : IntegrationResult
@@ -58,13 +59,30 @@ class Integration(
 
     @Volatile
     private var server: MyServer? = null
+
     private suspend fun startServer(settings: IntegrationSettings) {
         stopServer()
-        val server = createServer(settings)
-        this.server = server
-        withContext(Dispatchers.IO) {
-//            println("start server")
-            server.startMyServer()
+        // After stopping, the OS may keep the port in TIME_WAIT for a brief period.
+        // Retry a few times with a short delay before giving up.
+        val maxAttempts = 5
+        val retryDelayMs = 500L
+        repeat(maxAttempts) { attempt ->
+            val result = runCatching {
+                val newServer = createServer(settings)
+                withContext(Dispatchers.IO) {
+//                    println("start server")
+                    newServer.startMyServer()
+                }
+                this.server = newServer
+            }
+            if (result.isSuccess) return
+            val cause = result.exceptionOrNull()
+            if (cause is BindException && attempt < maxAttempts - 1) {
+                // Port not yet released by OS; wait and retry
+                delay(retryDelayMs)
+            } else {
+                throw cause ?: IllegalStateException("Unknown error starting server")
+            }
         }
     }
 
@@ -77,7 +95,6 @@ class Integration(
         }
         server = null
     }
-
 
     private fun createServer(settings: IntegrationSettings): MyServer {
         val server = embeddedServer(
