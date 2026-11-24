@@ -105,3 +105,26 @@ jobs:
             build/ci-release/binaries/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  trigger-site:
+    needs: [ "create-packages" ]
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Trigger Site Rebuild
+        continue-on-error: true
+        env:
+          BUILD_HOOK: ${{ secrets.SITE_BUILD_HOOK_URL }}
+          DISPATCH_PAT: ${{ secrets.SITE_DISPATCH_TOKEN }}
+        run: |
+          if [ -n "$BUILD_HOOK" ]; then
+            echo "Triggering site build hook..."
+            curl -s -X POST "$BUILD_HOOK"
+          fi
+          if [ -n "$DISPATCH_PAT" ]; then
+            echo "Triggering grabbo-DM-site repo dispatch..."
+            curl -s -X POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer $DISPATCH_PAT" \
+              https://api.github.com/repos/allenmiky/grabbo-DM-site/dispatches \
+              -d '{"event_type":"app_released"}'
+          fi
